@@ -30,18 +30,17 @@ cp -r popup dist/firefox/
 cp -r icons dist/firefox/
 cp -r onboarding dist/firefox/
 cp background.js dist/firefox/
-cp _firefox/manifest.json dist/firefox/
+cp firefox-manifest/manifest.json dist/firefox/
 
 # Create zip files
 echo "Creating zip files..."
 cd dist/chrome && zip -rq ../unifychats-chrome.zip . && cd ../..
 cd dist/firefox && zip -rq ../unifychats-firefox.zip . && cd ../..
 
-# Copy website files and zip downloads
-echo "Building website..."
-cp -r website/* dist/website/
-cp dist/unifychats-chrome.zip dist/website/
-cp dist/unifychats-firefox.zip dist/website/
+# Copy zips to website/public for Vercel deployment
+echo "Copying zips to website/public..."
+cp dist/unifychats-chrome.zip website/public/ai-chat-index-chrome.zip
+cp dist/unifychats-firefox.zip website/public/ai-chat-index-firefox.zip
 
 echo ""
 echo "========================================"
@@ -49,13 +48,14 @@ echo "Build complete!"
 echo "========================================"
 echo ""
 echo "Extension files:"
-echo "  dist/chrome/                    - Chrome unpacked extension"
-echo "  dist/firefox/                   - Firefox unpacked extension"
-echo "  dist/unifychats-chrome.zip   - Chrome packaged"
-echo "  dist/unifychats-firefox.zip  - Firefox packaged"
+echo "  dist/chrome/                              - Chrome unpacked (for local testing)"
+echo "  dist/firefox/                             - Firefox unpacked (for local testing)"
+echo "  dist/unifychats-chrome.zip                - Chrome packaged (for Web Store)"
+echo "  dist/unifychats-firefox.zip               - Firefox packaged (for Add-ons)"
 echo ""
-echo "Website files:"
-echo "  dist/website/                   - Ready to deploy website"
+echo "Website downloads (ready for Vercel):"
+echo "  website/public/ai-chat-index-chrome.zip   - Chrome download"
+echo "  website/public/ai-chat-index-firefox.zip  - Firefox download"
 echo ""
 echo "----------------------------------------"
 echo "Quick Start - Load in Chrome:"
@@ -71,4 +71,9 @@ echo "----------------------------------------"
 echo "  1. Open about:debugging#/runtime/this-firefox"
 echo "  2. Click 'Load Temporary Add-on'"
 echo "  3. Select dist/firefox/manifest.json"
+echo ""
+echo "----------------------------------------"
+echo "Deploy to Vercel:"
+echo "----------------------------------------"
+echo "  git add . && git commit -m 'Update extension' && git push"
 echo ""
