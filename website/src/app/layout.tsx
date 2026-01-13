@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ConvexClientProvider } from "@/components/convex-client-provider";
+import { ExtensionAuthSync } from "@/components/extension-auth-sync";
 import "./globals.css";
 
 const inter = Inter({
@@ -47,6 +48,7 @@ export default function RootLayout({
   const content = (
     <html lang="en" className={`${inter.variable} dark`}>
       <body className="font-sans antialiased min-h-screen bg-background text-foreground">
+        {clerkPubKey && <ExtensionAuthSync />}
         {children}
       </body>
     </html>

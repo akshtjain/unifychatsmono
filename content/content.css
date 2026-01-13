@@ -277,10 +277,26 @@
 .ai-chat-index-footer {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   padding: 10px 12px;
   background: rgba(255, 255, 255, 0.03);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ai-chat-index-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.ai-chat-index-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .ai-chat-index-sync-btn {
@@ -310,12 +326,12 @@
 }
 
 .ai-chat-index-sync-btn.syncing {
-  opacity: 0.7;
+  opacity: 0.8;
   cursor: wait;
 }
 
-.ai-chat-index-sync-btn.syncing svg {
-  animation: spin 1s linear infinite;
+.ai-chat-index-sync-btn.syncing .ai-chat-index-sync-icon {
+  animation: spin 1.2s linear infinite;
 }
 
 .ai-chat-index-sync-btn.not-authenticated {
@@ -326,8 +342,11 @@
 .ai-chat-index-sync-status {
   font-size: 11px;
   color: #a1a1aa;
-  flex: 1;
-  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 @keyframes spin {
@@ -338,6 +357,94 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Refresh button */
+.ai-chat-index-refresh-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+  flex-shrink: 0;
+}
+
+.ai-chat-index-refresh-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.ai-chat-index-refresh-btn:active {
+  transform: scale(0.95);
+}
+
+.ai-chat-index-refresh-btn.spinning svg {
+  animation: spin 0.6s linear infinite;
+}
+
+/* Auto-sync Toggle Switch */
+.ai-chat-index-auto-toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.ai-chat-index-auto-checkbox {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.ai-chat-index-auto-slider {
+  width: 28px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.ai-chat-index-auto-slider::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #71717a;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.ai-chat-index-auto-checkbox:checked + .ai-chat-index-auto-slider {
+  background: rgba(110, 231, 183, 0.25);
+}
+
+.ai-chat-index-auto-checkbox:checked + .ai-chat-index-auto-slider::after {
+  transform: translateX(12px);
+  background: #6ee7b7;
+}
+
+.ai-chat-index-auto-toggle:hover .ai-chat-index-auto-slider {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.ai-chat-index-auto-checkbox:checked + .ai-chat-index-auto-slider:hover {
+  background: rgba(110, 231, 183, 0.35);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 /* Light mode support - detect if page is light themed */

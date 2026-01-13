@@ -51,6 +51,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true; // Keep channel open for async response
   }
 
+  if (message.type === 'SYNC_CONVERSATION_BEACON') {
+    // Fire-and-forget sync for page unload (no response needed)
+    console.log('[UnifyChats BG] Processing beacon sync...');
+    handleSync(message.data)
+      .then(() => console.log('[UnifyChats BG] Beacon sync successful'))
+      .catch(err => console.log('[UnifyChats BG] Beacon sync failed:', err.message));
+    return false; // Don't wait for response
+  }
+
   if (message.type === 'GET_AUTH_STATUS') {
     getAuthStatus()
       .then(status => sendResponse(status))
@@ -134,7 +143,9 @@ async function handleSync(data) {
     console.log('[UnifyChats] Response:', result);
 
     if (!response.ok) {
-      throw new Error(result.error || 'Sync failed');
+      // Include status code and detailed message for better error handling
+      const errorMsg = result.message || result.error || 'Sync failed';
+      throw new Error(`${response.status}: ${errorMsg}`);
     }
 
     return result;

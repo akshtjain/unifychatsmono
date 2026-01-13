@@ -1,6 +1,6 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 const http = httpRouter();
 
@@ -20,11 +20,12 @@ http.route({
 
 // Sync conversation from extension
 // The extension will call this endpoint with a JWT token from Clerk
+// Authentication is handled by Convex's built-in auth system (validates JWT via JWKS)
 http.route({
   path: "/sync",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
-    // Add CORS headers to all responses
+    // CORS headers for all responses
     const corsHeaders = {
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "*",
@@ -32,25 +33,57 @@ http.route({
       "Access-Control-Allow-Headers": "Content-Type, Authorization",
     };
 
-    // Verify authentication via Clerk JWT
+    // Verify Authorization header is present
     const authHeader = request.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(
-        JSON.stringify({ error: "Unauthorized - missing token" }),
+        JSON.stringify({
+          error: "Unauthorized",
+          code: "MISSING_TOKEN",
+          message: "Authorization header with Bearer token is required"
+        }),
         { status: 401, headers: corsHeaders }
       );
     }
 
-    // Extract the token
-    const token = authHeader.substring(7);
-
     try {
+      // Use Convex's built-in auth - validates JWT signature via JWKS automatically
+      // This handles token expiration, signature verification, and issuer validation
+      const identity = await ctx.auth.getUserIdentity();
+
+      if (!identity) {
+        return new Response(
+          JSON.stringify({
+            error: "Unauthorized",
+            code: "INVALID_TOKEN",
+            message: "Token is invalid, expired, or not properly signed. Please refresh your session."
+          }),
+          { status: 401, headers: corsHeaders }
+        );
+      }
+
+      const userId = identity.subject;
+      if (!userId) {
+        return new Response(
+          JSON.stringify({
+            error: "Unauthorized",
+            code: "MISSING_USER_ID",
+            message: "Token does not contain a valid user identifier"
+          }),
+          { status: 401, headers: corsHeaders }
+        );
+      }
+
       const body = await request.json();
 
       // Validate required fields
       if (!body.provider || !body.externalId || !body.messages) {
         return new Response(
-          JSON.stringify({ error: "Missing required fields: provider, externalId, or messages" }),
+          JSON.stringify({
+            error: "Bad Request",
+            code: "MISSING_FIELDS",
+            message: "Missing required fields: provider, externalId, or messages"
+          }),
           { status: 400, headers: corsHeaders }
         );
       }
@@ -59,17 +92,21 @@ http.route({
       const validProviders = ["chatgpt", "claude", "gemini", "grok"];
       if (!validProviders.includes(body.provider)) {
         return new Response(
-          JSON.stringify({ error: `Invalid provider: ${body.provider}` }),
+          JSON.stringify({
+            error: "Bad Request",
+            code: "INVALID_PROVIDER",
+            message: `Invalid provider: ${body.provider}. Valid providers: ${validProviders.join(", ")}`
+          }),
           { status: 400, headers: corsHeaders }
         );
       }
 
-      // Call the internal sync mutation with the token for auth
-      // We use runMutation which will use the HTTP action's auth context
+      // Call the internal mutation with validated userId
+      // Internal mutations can only be called from server-side code (trusted)
       const conversationId = await ctx.runMutation(
-        api.conversations.syncFromExtension,
+        internal.conversations.syncFromExtensionInternal,
         {
-          token,
+          userId,
           provider: body.provider,
           externalId: body.externalId,
           title: body.title || "Untitled",
@@ -79,14 +116,23 @@ http.route({
       );
 
       return new Response(
-        JSON.stringify({ success: true, conversationId: conversationId }),
+        JSON.stringify({ success: true, conversationId }),
         { status: 200, headers: corsHeaders }
       );
     } catch (error: any) {
       console.error("Sync error:", error);
+
+      // Determine error type for proper HTTP status
+      const errorMessage = error.message || "Sync failed";
+      const isServerError = !errorMessage.includes("Unauthorized");
+
       return new Response(
-        JSON.stringify({ error: error.message || "Sync failed" }),
-        { status: 500, headers: corsHeaders }
+        JSON.stringify({
+          error: isServerError ? "Internal Server Error" : "Unauthorized",
+          code: isServerError ? "SYNC_FAILED" : "AUTH_ERROR",
+          message: errorMessage
+        }),
+        { status: isServerError ? 500 : 401, headers: corsHeaders }
       );
     }
   }),
@@ -110,19 +156,44 @@ http.route({
 });
 
 // Search messages endpoint for extension
+// Authentication handled by Convex's built-in auth system
 http.route({
   path: "/search",
   method: "GET",
   handler: httpAction(async (ctx, request) => {
+    const corsHeaders = {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    };
+
+    // Verify Authorization header is present
     const authHeader = request.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          error: "Unauthorized",
+          code: "MISSING_TOKEN",
+          message: "Authorization header with Bearer token is required"
+        }),
+        { status: 401, headers: corsHeaders }
+      );
     }
 
     try {
+      // Use Convex's built-in auth validation
+      const identity = await ctx.auth.getUserIdentity();
+
+      if (!identity) {
+        return new Response(
+          JSON.stringify({
+            error: "Unauthorized",
+            code: "INVALID_TOKEN",
+            message: "Token is invalid, expired, or not properly signed. Please refresh your session."
+          }),
+          { status: 401, headers: corsHeaders }
+        );
+      }
+
       const url = new URL(request.url);
       const query = url.searchParams.get("q");
       const provider = url.searchParams.get("provider");
@@ -130,11 +201,12 @@ http.route({
 
       if (!query) {
         return new Response(
-          JSON.stringify({ error: "Missing query parameter" }),
-          {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          }
+          JSON.stringify({
+            error: "Bad Request",
+            code: "MISSING_QUERY",
+            message: "Query parameter 'q' is required"
+          }),
+          { status: 400, headers: corsHeaders }
         );
       }
 
@@ -144,20 +216,19 @@ http.route({
         limit,
       });
 
-      return new Response(JSON.stringify({ results }), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-      });
-    } catch (error: any) {
       return new Response(
-        JSON.stringify({ error: error.message || "Search failed" }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        }
+        JSON.stringify({ results }),
+        { status: 200, headers: corsHeaders }
+      );
+    } catch (error: any) {
+      console.error("Search error:", error);
+      return new Response(
+        JSON.stringify({
+          error: "Internal Server Error",
+          code: "SEARCH_FAILED",
+          message: error.message || "Search failed"
+        }),
+        { status: 500, headers: corsHeaders }
       );
     }
   }),

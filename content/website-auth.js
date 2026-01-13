@@ -6,6 +6,33 @@
 (function() {
   'use strict';
 
+  // Mark that extension is present for the website to detect
+  document.body.setAttribute('data-unifychats-extension', 'true');
+
+  // Respond to extension detection requests from the website
+  window.addEventListener('unifychats-check-extension', () => {
+    window.dispatchEvent(new CustomEvent('unifychats-extension-present'));
+  });
+
+  // Handle logout requests from the website
+  window.addEventListener('unifychats-logout', () => {
+    chrome.runtime.sendMessage({ type: 'LOGOUT' }, (response) => {
+      if (response?.success) {
+        console.log('[UnifyChats] Extension logged out successfully');
+        window.dispatchEvent(new CustomEvent('unifychats-extension-logged-out'));
+      }
+    });
+  });
+
+  // Check for logout flag in localStorage (backup method)
+  function checkForLogout() {
+    const logoutFlag = localStorage.getItem('unifychats_extension_logout');
+    if (logoutFlag) {
+      localStorage.removeItem('unifychats_extension_logout');
+      chrome.runtime.sendMessage({ type: 'LOGOUT' });
+    }
+  }
+
   // Check for auth data in localStorage on page load
   function checkForAuthToken() {
     try {
@@ -44,6 +71,9 @@
     if (event.key === 'unifychats_extension_auth' && event.newValue) {
       checkForAuthToken();
     }
+    if (event.key === 'unifychats_extension_logout' && event.newValue) {
+      checkForLogout();
+    }
   });
 
   // Also listen for custom event from the website
@@ -53,9 +83,13 @@
 
   // Check on page load
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', checkForAuthToken);
+    document.addEventListener('DOMContentLoaded', () => {
+      checkForAuthToken();
+      checkForLogout();
+    });
   } else {
     checkForAuthToken();
+    checkForLogout();
   }
 
   // Re-check periodically in case the token was set after initial load

@@ -31,6 +31,20 @@
   let panelPosition = { x: null, y: null };
   let isSyncing = false;
 
+  // Auto-sync state
+  let autoSyncEnabled = false;
+  let autoSyncInterval = null;
+  let lastSyncHash = null;
+  let activityDebounceTimer = null;
+  let lastSyncTime = 0;
+
+  // Auto-sync configuration (in milliseconds)
+  const AUTO_SYNC_CONFIG = {
+    activityDebounce: 5000,     // 5 seconds after activity stops
+    periodicInterval: 300000,   // 5 minutes
+    minSyncInterval: 30000      // Minimum 30 seconds between syncs
+  };
+
   // Use shared config (loaded from config.js via manifest)
   const WEBSITE_URL = CONFIG.WEBSITE_URL;
 
@@ -79,13 +93,29 @@
       </div>
       <div class="ai-chat-index-list"></div>
       <div class="ai-chat-index-footer">
-        <button class="ai-chat-index-sync-btn" title="Sync to UnifyChats">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9"/>
-          </svg>
-          <span>Sync</span>
-        </button>
-        <span class="ai-chat-index-sync-status"></span>
+        <div class="ai-chat-index-footer-left">
+          <button class="ai-chat-index-sync-btn" title="Sync to UnifyChats">
+            <svg class="ai-chat-index-sync-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9"/>
+            </svg>
+            <span>Sync</span>
+          </button>
+          <label class="ai-chat-index-auto-toggle" title="Auto-sync when conversation changes">
+            <input type="checkbox" class="ai-chat-index-auto-checkbox">
+            <span class="ai-chat-index-auto-slider"></span>
+          </label>
+          <span class="ai-chat-index-sync-status"></span>
+        </div>
+        <div class="ai-chat-index-footer-right">
+          <button class="ai-chat-index-refresh-btn" title="Refresh messages">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+              <path d="M3 3v5h5"/>
+              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+              <path d="M16 21h5v-5"/>
+            </svg>
+          </button>
+        </div>
       </div>
     `;
 
@@ -93,6 +123,12 @@
     panel.querySelector('.ai-chat-index-close').addEventListener('click', togglePanel);
     panel.querySelector('.ai-chat-index-header').addEventListener('mousedown', startDrag);
     panel.querySelector('.ai-chat-index-sync-btn').addEventListener('click', handleSyncClick);
+    panel.querySelector('.ai-chat-index-refresh-btn').addEventListener('click', handleRefreshClick);
+
+    // Auto-sync toggle
+    panel.querySelector('.ai-chat-index-auto-checkbox').addEventListener('change', (e) => {
+      setAutoSyncEnabled(e.target.checked);
+    });
 
     // Filter buttons
     panel.querySelectorAll('.ai-chat-index-filter').forEach(btn => {
@@ -233,25 +269,362 @@
     return div.innerHTML;
   }
 
+  // Track if we're waiting for sign-in
+  let waitingForSignIn = false;
+
   // Check authentication status
-  function checkAuthStatus() {
+  // showFeedback: shows "Checking..." while loading
+  // Only shows "Connected!" if user was waiting for sign-in
+  function checkAuthStatus(showFeedback = false) {
+    const syncBtn = panel?.querySelector('.ai-chat-index-sync-btn');
+    const statusEl = panel?.querySelector('.ai-chat-index-sync-status');
+    const refreshBtn = panel?.querySelector('.ai-chat-index-refresh-btn');
+
+    if (!syncBtn || !statusEl) return;
+
+    const wasWaitingForSignIn = waitingForSignIn;
+
+    if (showFeedback) {
+      statusEl.textContent = 'Checking...';
+      statusEl.style.color = '#a1a1aa';
+      if (refreshBtn) refreshBtn.classList.add('spinning');
+    }
+
     chrome.runtime.sendMessage({ type: 'GET_AUTH_STATUS' }, (response) => {
-      const syncBtn = panel.querySelector('.ai-chat-index-sync-btn');
-      const statusEl = panel.querySelector('.ai-chat-index-sync-status');
+      if (refreshBtn) refreshBtn.classList.remove('spinning');
 
       if (response?.isAuthenticated) {
         syncBtn.classList.remove('not-authenticated');
-        statusEl.textContent = '';
+        // Only show "Connected!" if user was waiting for sign-in
+        if (wasWaitingForSignIn) {
+          statusEl.textContent = 'Connected!';
+          statusEl.style.color = '#6ee7b7';
+          setTimeout(() => {
+            statusEl.textContent = '';
+          }, 2000);
+        } else {
+          statusEl.textContent = '';
+        }
+        statusEl.style.cursor = 'default';
+        statusEl.onclick = null;
+        waitingForSignIn = false;
       } else {
         syncBtn.classList.add('not-authenticated');
         statusEl.textContent = 'Sign in to sync';
+        statusEl.style.color = '#a1a1aa';
         statusEl.style.cursor = 'pointer';
         statusEl.onclick = () => {
+          waitingForSignIn = true;
           window.open(`${WEBSITE_URL}/dashboard`, '_blank');
         };
       }
     });
   }
+
+  // Handle refresh button click - refresh both auth status and conversation messages
+  function handleRefreshClick() {
+    const refreshBtn = panel?.querySelector('.ai-chat-index-refresh-btn');
+    const statusEl = panel?.querySelector('.ai-chat-index-sync-status');
+
+    if (refreshBtn) refreshBtn.classList.add('spinning');
+
+    // Reset sync hash since conversation may have changed
+    lastSyncHash = null;
+
+    // Show refreshing status
+    if (statusEl && !statusEl.textContent) {
+      statusEl.textContent = 'Refreshing...';
+      statusEl.style.color = '#a1a1aa';
+    }
+
+    // Refresh the message list with current conversation
+    const filter = panel.querySelector('.ai-chat-index-filter.active')?.dataset.filter || 'all';
+    updateMessageList(filter);
+
+    // Re-setup observer in case conversation container changed
+    setupObserver();
+
+    // Check auth status (silent - don't show "Connected!")
+    chrome.runtime.sendMessage({ type: 'GET_AUTH_STATUS' }, (response) => {
+      const syncBtn = panel?.querySelector('.ai-chat-index-sync-btn');
+      if (response?.isAuthenticated) {
+        if (syncBtn) syncBtn.classList.remove('not-authenticated');
+      } else {
+        if (syncBtn) syncBtn.classList.add('not-authenticated');
+      }
+    });
+
+    // Stop spinner and clear status
+    setTimeout(() => {
+      if (refreshBtn) refreshBtn.classList.remove('spinning');
+      if (statusEl && statusEl.textContent === 'Refreshing...') {
+        statusEl.textContent = '';
+      }
+    }, 500);
+  }
+
+  // Auto-retry when tab regains focus (user might have just signed in)
+  function setupAutoRetry() {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && waitingForSignIn && panel) {
+        // Small delay to let the extension pick up new auth
+        setTimeout(() => {
+          checkAuthStatus(true);
+        }, 500);
+      }
+    });
+
+    // Also check on window focus
+    window.addEventListener('focus', () => {
+      if (waitingForSignIn && panel) {
+        setTimeout(() => {
+          checkAuthStatus(true);
+        }, 500);
+      }
+    });
+  }
+
+  // ==================== AUTO-SYNC FUNCTIONS ====================
+
+  // Generate a simple hash of conversation data to detect changes
+  function getConversationHash() {
+    try {
+      const data = collectConversationData();
+      const hashInput = JSON.stringify({
+        provider: data.provider,
+        externalId: data.externalId,
+        messageCount: data.messages.length,
+        lastMessageContent: data.messages[data.messages.length - 1]?.content?.slice(0, 100) || ''
+      });
+      let hash = 0;
+      for (let i = 0; i < hashInput.length; i++) {
+        const char = hashInput.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+      return hash.toString();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Update sync status for auto-sync operations
+  // Uses the main status element and sync button icon for consistent UX
+  function updateAutoSyncIndicator(status) {
+    const statusEl = panel?.querySelector('.ai-chat-index-sync-status');
+    const syncBtn = panel?.querySelector('.ai-chat-index-sync-btn');
+    if (!statusEl) return;
+
+    switch (status) {
+      case 'syncing':
+        statusEl.textContent = 'Syncing...';
+        statusEl.style.color = '#a1a1aa';
+        statusEl.style.cursor = 'default';
+        statusEl.onclick = null;
+        if (syncBtn) syncBtn.classList.add('syncing');
+        break;
+      case 'success':
+        statusEl.textContent = 'Synced!';
+        statusEl.style.color = '#6ee7b7';
+        if (syncBtn) syncBtn.classList.remove('syncing');
+        setTimeout(() => {
+          // Only clear if no other status has been set
+          if (statusEl.textContent === 'Synced!') {
+            statusEl.textContent = '';
+          }
+        }, 2000);
+        break;
+      case 'error':
+        statusEl.textContent = 'Sync failed';
+        statusEl.style.color = '#f87171';
+        if (syncBtn) syncBtn.classList.remove('syncing');
+        setTimeout(() => {
+          // Only clear if no other status has been set
+          if (statusEl.textContent === 'Sync failed') {
+            statusEl.textContent = '';
+          }
+        }, 3000);
+        break;
+    }
+  }
+
+  // Perform auto-sync with all guards
+  async function performAutoSync(source = 'unknown') {
+    console.log(`[UnifyChats] Auto-sync triggered (source: ${source})`);
+
+    // Guard: Check if auto-sync is enabled
+    if (!autoSyncEnabled) {
+      console.log('[UnifyChats] Auto-sync disabled, skipping');
+      return;
+    }
+
+    // Guard: Check if already syncing
+    if (isSyncing) {
+      console.log('[UnifyChats] Already syncing, skipping');
+      return;
+    }
+
+    // Guard: Check minimum interval between syncs
+    const now = Date.now();
+    if (now - lastSyncTime < AUTO_SYNC_CONFIG.minSyncInterval) {
+      console.log('[UnifyChats] Too soon since last sync, skipping');
+      return;
+    }
+
+    // Guard: Check extension context
+    if (!chrome.runtime?.id) {
+      console.log('[UnifyChats] Extension context invalid, skipping');
+      return;
+    }
+
+    // Guard: Check authentication
+    const authStatus = await new Promise(resolve => {
+      chrome.runtime.sendMessage({ type: 'GET_AUTH_STATUS' }, resolve);
+    });
+
+    if (!authStatus?.isAuthenticated) {
+      console.log('[UnifyChats] Not authenticated, skipping auto-sync');
+      return;
+    }
+
+    // Guard: Check if conversation has changed
+    const currentHash = getConversationHash();
+    if (currentHash && currentHash === lastSyncHash) {
+      console.log('[UnifyChats] No changes detected, skipping sync');
+      return;
+    }
+
+    // Perform the sync
+    try {
+      isSyncing = true;
+      updateAutoSyncIndicator('syncing');
+
+      const conversationData = collectConversationData();
+
+      const response = await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage(
+          { type: 'SYNC_CONVERSATION', data: conversationData },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              reject(new Error(chrome.runtime.lastError.message));
+            } else if (response?.success) {
+              resolve(response.data);
+            } else {
+              reject(new Error(response?.error || 'Sync failed'));
+            }
+          }
+        );
+      });
+
+      lastSyncHash = currentHash;
+      lastSyncTime = Date.now();
+      updateAutoSyncIndicator('success');
+      console.log('[UnifyChats] Auto-sync successful');
+
+    } catch (error) {
+      console.error('[UnifyChats] Auto-sync error:', error);
+      updateAutoSyncIndicator('error');
+
+      // If auth error, disable auto-sync
+      if (error.message?.includes('401') || error.message?.includes('auth')) {
+        setAutoSyncEnabled(false);
+      }
+    } finally {
+      isSyncing = false;
+    }
+  }
+
+  // Start periodic auto-sync
+  function startPeriodicSync() {
+    if (autoSyncInterval) {
+      clearInterval(autoSyncInterval);
+    }
+    autoSyncInterval = setInterval(() => {
+      performAutoSync('periodic');
+    }, AUTO_SYNC_CONFIG.periodicInterval);
+  }
+
+  // Stop periodic auto-sync
+  function stopPeriodicSync() {
+    if (autoSyncInterval) {
+      clearInterval(autoSyncInterval);
+      autoSyncInterval = null;
+    }
+  }
+
+  // Set auto-sync enabled state and persist
+  function setAutoSyncEnabled(enabled) {
+    autoSyncEnabled = enabled;
+
+    // Update toggle UI
+    const checkbox = panel?.querySelector('.ai-chat-index-auto-checkbox');
+    if (checkbox) {
+      checkbox.checked = enabled;
+    }
+
+    // Persist to storage
+    chrome.storage.sync.set({ autoSyncEnabled: enabled });
+
+    // Start or stop periodic sync
+    if (enabled) {
+      startPeriodicSync();
+      // Perform initial sync when enabled
+      performAutoSync('enabled');
+    } else {
+      stopPeriodicSync();
+      clearTimeout(activityDebounceTimer);
+    }
+
+    console.log(`[UnifyChats] Auto-sync ${enabled ? 'enabled' : 'disabled'}`);
+  }
+
+  // Load auto-sync setting from storage
+  function loadAutoSyncSetting() {
+    chrome.storage.sync.get(['autoSyncEnabled'], (result) => {
+      const enabled = result.autoSyncEnabled === true;
+
+      const checkbox = panel?.querySelector('.ai-chat-index-auto-checkbox');
+      if (checkbox) {
+        checkbox.checked = enabled;
+      }
+
+      autoSyncEnabled = enabled;
+
+      if (enabled) {
+        startPeriodicSync();
+      }
+    });
+  }
+
+  // Setup page leave sync trigger
+  function setupPageLeaveSync() {
+    // Sync when page is about to unload
+    window.addEventListener('beforeunload', () => {
+      if (autoSyncEnabled && !isSyncing) {
+        const currentHash = getConversationHash();
+        if (currentHash && currentHash !== lastSyncHash) {
+          try {
+            const conversationData = collectConversationData();
+            chrome.runtime.sendMessage({
+              type: 'SYNC_CONVERSATION_BEACON',
+              data: conversationData
+            });
+          } catch (e) {
+            console.error('[UnifyChats] Page leave sync failed:', e);
+          }
+        }
+      }
+    });
+
+    // Also sync when tab becomes hidden (switching tabs)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden' && autoSyncEnabled) {
+        performAutoSync('tab-hidden');
+      }
+    });
+  }
+
+  // ==================== END AUTO-SYNC FUNCTIONS ====================
 
   // Handle sync button click
   async function handleSyncClick() {
@@ -333,11 +706,27 @@
 
     } catch (error) {
       console.error('[UnifyChats] Sync error:', error);
-      statusEl.textContent = error.message || 'Sync failed';
+      const errorMsg = error.message || 'Sync failed';
+
+      // Check if this is an auth error (token expired or invalid)
+      if (errorMsg.includes('401') || errorMsg.includes('auth') || errorMsg.includes('Unauthorized') || errorMsg.includes('Not authenticated')) {
+        // Clear stored auth and update UI
+        chrome.runtime.sendMessage({ type: 'LOGOUT' });
+        statusEl.textContent = 'Session expired. Sign in again';
+        statusEl.style.cursor = 'pointer';
+        statusEl.onclick = () => {
+          window.open(`${WEBSITE_URL}/dashboard`, '_blank');
+        };
+        syncBtn.classList.add('not-authenticated');
+      } else {
+        statusEl.textContent = errorMsg;
+      }
       statusEl.style.color = '#f87171';
 
       setTimeout(() => {
-        statusEl.textContent = '';
+        if (!statusEl.textContent.includes('Sign in')) {
+          statusEl.textContent = '';
+        }
       }, 5000);
     } finally {
       isSyncing = false;
@@ -397,6 +786,9 @@
     };
   }
 
+  // Store observer reference for cleanup
+  let conversationObserver = null;
+
   // Set up MutationObserver to watch for new messages
   function setupObserver() {
     if (!currentProvider) return;
@@ -408,19 +800,95 @@
       return;
     }
 
-    const observer = new MutationObserver((mutations) => {
-      // Debounce updates
+    // Disconnect existing observer before creating new one
+    if (conversationObserver) {
+      conversationObserver.disconnect();
+      conversationObserver = null;
+    }
+
+    conversationObserver = new MutationObserver((mutations) => {
+      // Debounce updates for UI
       clearTimeout(window.__aiChatIndexUpdateTimeout);
       window.__aiChatIndexUpdateTimeout = setTimeout(() => {
         const filter = panel.querySelector('.ai-chat-index-filter.active')?.dataset.filter || 'all';
         updateMessageList(filter);
       }, 300);
+
+      // Debounce auto-sync on activity
+      if (autoSyncEnabled) {
+        clearTimeout(activityDebounceTimer);
+        activityDebounceTimer = setTimeout(() => {
+          performAutoSync('activity');
+        }, AUTO_SYNC_CONFIG.activityDebounce);
+      }
     });
 
-    observer.observe(container, {
+    conversationObserver.observe(container, {
       childList: true,
       subtree: true
     });
+
+    console.log('[UnifyChats] Observer attached to conversation container');
+  }
+
+  // Track current URL for SPA navigation detection
+  let currentUrl = window.location.href;
+
+  // Detect URL changes in SPA (ChatGPT, Claude, etc. don't reload the page)
+  function setupUrlChangeDetection() {
+    // Check for URL changes periodically (SPAs don't always trigger popstate)
+    setInterval(() => {
+      if (window.location.href !== currentUrl) {
+        console.log('[UnifyChats] URL changed, refreshing...');
+        const oldUrl = currentUrl;
+        currentUrl = window.location.href;
+        handleUrlChange(oldUrl, currentUrl);
+      }
+    }, 500);
+
+    // Also listen for popstate (back/forward navigation)
+    window.addEventListener('popstate', () => {
+      if (window.location.href !== currentUrl) {
+        const oldUrl = currentUrl;
+        currentUrl = window.location.href;
+        handleUrlChange(oldUrl, currentUrl);
+      }
+    });
+  }
+
+  // Handle URL change - refresh messages and reset sync state
+  function handleUrlChange(oldUrl, newUrl) {
+    console.log('[UnifyChats] Navigated from', oldUrl, 'to', newUrl);
+
+    // Reset sync hash since we're on a new conversation
+    lastSyncHash = null;
+
+    // Show loading indicator
+    const refreshBtn = panel?.querySelector('.ai-chat-index-refresh-btn');
+    if (refreshBtn) refreshBtn.classList.add('spinning');
+
+    // Wait a moment for the new conversation to load, then refresh
+    setTimeout(() => {
+      // Update the message list
+      const filter = panel?.querySelector('.ai-chat-index-filter.active')?.dataset.filter || 'all';
+      updateMessageList(filter);
+
+      // Re-setup observer for new conversation container
+      setupObserver();
+
+      // Stop the spinner
+      if (refreshBtn) refreshBtn.classList.remove('spinning');
+
+      // Trigger auto-sync for the new conversation if enabled
+      if (autoSyncEnabled) {
+        // Clear any pending activity debounce
+        clearTimeout(activityDebounceTimer);
+        // Sync after a short delay to let messages load
+        activityDebounceTimer = setTimeout(() => {
+          performAutoSync('navigation');
+        }, 1500);
+      }
+    }, 800);
   }
 
   // Initialize
@@ -437,6 +905,14 @@
     createFloatingButton();
     createPanel();
     setupObserver();
+    setupAutoRetry();
+    setupPageLeaveSync();
+    setupUrlChangeDetection();
+
+    // Load auto-sync setting after panel is created
+    setTimeout(() => {
+      loadAutoSyncSetting();
+    }, 100);
 
     // Initial update after a short delay to let the page load
     setTimeout(() => updateMessageList(), 1000);

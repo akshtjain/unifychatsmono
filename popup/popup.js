@@ -48,6 +48,7 @@ async function checkAuthStatus() {
   const authText = document.getElementById('auth-text');
   const authBtn = document.getElementById('auth-btn');
   const authBtnText = document.getElementById('auth-btn-text');
+  const authBtnIcon = document.getElementById('auth-btn-icon');
   const syncStats = document.getElementById('sync-stats');
 
   try {
@@ -56,33 +57,37 @@ async function checkAuthStatus() {
     });
 
     if (response?.isAuthenticated) {
-      // Connected
+      // Connected - show success state
       authDot.classList.add('connected');
-      authText.textContent = 'Connected to UnifyChats';
+      authText.textContent = 'Signed in';
       authBtn.classList.remove('connect');
       authBtn.classList.add('disconnect');
-      authBtnText.textContent = 'Open Dashboard';
+      authBtnText.textContent = 'View Dashboard';
+      // Change icon to external link
+      authBtnIcon.innerHTML = '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>';
       syncStats.classList.add('visible');
-      syncStats.textContent = 'Use the Sync button in the panel to save conversations.';
+      syncStats.textContent = 'Click the purple button on any chat to sync your conversations.';
 
       authBtn.onclick = () => {
         window.open(`${WEBSITE_URL}/dashboard`, '_blank');
       };
     } else {
-      // Not connected
+      // Not connected - prompt to sign in
       authDot.classList.remove('connected');
-      authText.textContent = 'Not connected';
+      authText.textContent = 'Not signed in';
       authBtn.classList.add('connect');
       authBtn.classList.remove('disconnect');
-      authBtnText.textContent = 'Connect to UnifyChats';
-      syncStats.classList.remove('visible');
+      authBtnText.textContent = 'Sign in to sync';
+      syncStats.classList.add('visible');
+      syncStats.textContent = 'Sign in to save and search your AI conversations.';
 
       authBtn.onclick = () => {
         window.open(`${WEBSITE_URL}/dashboard?connect=extension`, '_blank');
       };
     }
   } catch (err) {
-    authText.textContent = 'Error checking status';
+    authText.textContent = 'Connection error';
+    authBtnText.textContent = 'Try again';
     authBtn.onclick = () => {
       window.open(`${WEBSITE_URL}/dashboard`, '_blank');
     };

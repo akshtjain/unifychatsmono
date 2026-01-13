@@ -200,11 +200,11 @@ export const remove = mutation({
   },
 });
 
-// Sync from extension - accepts JWT token and extracts user ID
-// This is called from the HTTP endpoint
-export const syncFromExtension = mutation({
+// Internal mutation for syncing - called only from trusted HTTP action after auth validation
+// This does NOT validate tokens - authentication is handled by the HTTP layer
+export const syncFromExtensionInternal = internalMutation({
   args: {
-    token: v.string(),
+    userId: v.string(),
     provider: providerType,
     externalId: v.string(),
     title: v.string(),
@@ -218,34 +218,7 @@ export const syncFromExtension = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    // Decode the JWT to extract user ID (JWT is base64 encoded)
-    // Format: header.payload.signature
-    let userId: string;
-
-    try {
-      const parts = args.token.split(".");
-      if (parts.length !== 3) {
-        throw new Error("Invalid token format");
-      }
-
-      // Decode the payload (second part)
-      const payload = JSON.parse(atob(parts[1]));
-
-      // Clerk tokens have the user ID in the 'sub' claim
-      userId = payload.sub;
-
-      if (!userId) {
-        throw new Error("No user ID in token");
-      }
-
-      // Check if token is expired
-      if (payload.exp && payload.exp * 1000 < Date.now()) {
-        throw new Error("Token expired");
-      }
-    } catch (error: any) {
-      throw new Error(`Authentication failed: ${error.message}`);
-    }
-
+    const { userId } = args;
     const now = Date.now();
 
     // Check if conversation already exists
