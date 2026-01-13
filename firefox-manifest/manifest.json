@@ -5,6 +5,7 @@
   "description": "Floating index to navigate messages in AI chat interfaces. Sync across devices with unifychats.app.",
   "background": {
     "scripts": [
+      "config.js",
       "background.js"
     ],
     "persistent": false
@@ -36,6 +37,7 @@
         "https://x.com/i/grok*"
       ],
       "js": [
+        "config.js",
         "content/providers/chatgpt.js",
         "content/providers/claude.js",
         "content/providers/gemini.js",

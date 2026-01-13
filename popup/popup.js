@@ -11,9 +11,8 @@ const SUPPORTED_HOSTS = {
   'x.com': 'Grok (X)'
 };
 
-// Set to true for local development testing
-const DEV_MODE = true;
-const WEBSITE_URL = DEV_MODE ? 'http://localhost:3000' : 'https://unifychats.app';
+// Use shared config (loaded from config.js)
+const WEBSITE_URL = CONFIG.WEBSITE_URL;
 
 // Check current tab status
 async function checkCurrentTab() {

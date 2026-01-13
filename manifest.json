@@ -48,6 +48,7 @@
         "https://x.com/i/grok*"
       ],
       "js": [
+        "config.js",
         "content/providers/chatgpt.js",
         "content/providers/claude.js",
         "content/providers/gemini.js",

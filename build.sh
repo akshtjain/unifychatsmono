@@ -21,6 +21,7 @@ cp -r popup dist/chrome/
 cp -r icons dist/chrome/
 cp -r onboarding dist/chrome/
 cp background.js dist/chrome/
+cp config.js dist/chrome/
 cp manifest.json dist/chrome/
 
 # Copy common files to Firefox
@@ -30,7 +31,13 @@ cp -r popup dist/firefox/
 cp -r icons dist/firefox/
 cp -r onboarding dist/firefox/
 cp background.js dist/firefox/
+cp config.js dist/firefox/
 cp firefox-manifest/manifest.json dist/firefox/
+
+# Set production mode (DEV_MODE = false)
+echo "Setting production mode..."
+sed -i '' 's/DEV_MODE: true/DEV_MODE: false/g' dist/chrome/config.js
+sed -i '' 's/DEV_MODE: true/DEV_MODE: false/g' dist/firefox/config.js
 
 # Create zip files
 echo "Creating zip files..."

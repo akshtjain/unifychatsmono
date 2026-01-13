@@ -31,9 +31,8 @@
   let panelPosition = { x: null, y: null };
   let isSyncing = false;
 
-  // Set to true for local development testing
-  const DEV_MODE = true;
-  const WEBSITE_URL = DEV_MODE ? 'http://localhost:3000' : 'https://unifychats.app';
+  // Use shared config (loaded from config.js via manifest)
+  const WEBSITE_URL = CONFIG.WEBSITE_URL;
 
   // DOM Elements
   let floatingButton = null;

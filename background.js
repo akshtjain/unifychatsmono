@@ -3,17 +3,16 @@
  * Handles extension lifecycle events, sync, and auth
  */
 
+// Import shared config (defines CONFIG.DEV_MODE and CONFIG.WEBSITE_URL)
+// Chrome uses service worker (importScripts), Firefox loads via manifest
+if (typeof importScripts === 'function') {
+  importScripts('config.js');
+}
+
 console.log('[UnifyChats BG] Service worker starting...');
 
-// Configuration - Update this with your Convex deployment URL
-// Set to true for local development testing
-const DEV_MODE = true;
-
-const CONFIG = {
-  // This will be set by user in settings or auto-detected
-  CONVEX_URL: null,
-  WEBSITE_URL: DEV_MODE ? 'http://localhost:3000' : 'https://unifychats.app'
-};
+// Add runtime property
+CONFIG.CONVEX_URL = null;
 
 // Initialize config from storage
 chrome.storage.sync.get(['convexUrl', 'authToken'], (result) => {
