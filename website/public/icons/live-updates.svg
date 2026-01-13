@@ -1,0 +1,13 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Sync arrows -->
+  <path d="M32 16 C32 12 28 8 24 8 C18 8 14 12 14 18" stroke="#f59e0b" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M16 32 C16 36 20 40 24 40 C30 40 34 36 34 30" stroke="#f59e0b" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- Arrow heads -->
+  <path d="M10 18 L14 18 L14 14" stroke="#f59e0b" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M38 30 L34 30 L34 34" stroke="#f59e0b" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Pulse ring -->
+  <circle cx="24" cy="24" r="6" stroke="#f59e0b" stroke-width="2" fill="none" opacity="0.4"/>
+  <circle cx="24" cy="24" r="3" fill="#f59e0b"/>
+</svg>

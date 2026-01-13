@@ -1,0 +1,9 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Funnel shape -->
+  <path d="M8 10 L40 10 L28 24 L28 36 L20 40 L20 24 L8 10 Z" stroke="#f59e0b" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Filter dots -->
+  <circle cx="16" cy="14" r="2" fill="#f59e0b" opacity="0.6"/>
+  <circle cx="24" cy="14" r="2" fill="#f59e0b"/>
+  <circle cx="32" cy="14" r="2" fill="#f59e0b" opacity="0.6"/>
+</svg>

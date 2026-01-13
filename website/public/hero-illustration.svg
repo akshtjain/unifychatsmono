@@ -1,0 +1,88 @@
+<svg width="600" height="400" viewBox="0 0 600 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="amber-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="card-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1c1c1f"/>
+      <stop offset="100%" stop-color="#141416"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background glow -->
+  <ellipse cx="300" cy="200" rx="200" ry="150" fill="url(#amber-grad)" opacity="0.05"/>
+
+  <!-- Connecting threads (golden lines) -->
+  <path d="M150 120 Q300 80 450 130" stroke="url(#amber-grad)" stroke-width="1.5" fill="none" opacity="0.4"/>
+  <path d="M150 280 Q300 320 450 270" stroke="url(#amber-grad)" stroke-width="1.5" fill="none" opacity="0.4"/>
+  <path d="M300 200 L150 120" stroke="url(#amber-grad)" stroke-width="1" fill="none" opacity="0.3"/>
+  <path d="M300 200 L450 130" stroke="url(#amber-grad)" stroke-width="1" fill="none" opacity="0.3"/>
+  <path d="M300 200 L150 280" stroke="url(#amber-grad)" stroke-width="1" fill="none" opacity="0.3"/>
+  <path d="M300 200 L450 270" stroke="url(#amber-grad)" stroke-width="1" fill="none" opacity="0.3"/>
+
+  <!-- Central hub -->
+  <circle cx="300" cy="200" r="24" fill="#141416" stroke="url(#amber-grad)" stroke-width="2" filter="url(#glow)"/>
+  <circle cx="300" cy="200" r="8" fill="url(#amber-grad)"/>
+
+  <!-- Chat window 1 - Top Left (ChatGPT style) -->
+  <g transform="translate(70, 60)">
+    <rect width="120" height="100" rx="8" fill="url(#card-grad)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+    <rect x="12" y="12" width="60" height="6" rx="3" fill="#10a37f" opacity="0.8"/>
+    <rect x="12" y="28" width="96" height="4" rx="2" fill="#fafaf9" opacity="0.5"/>
+    <rect x="12" y="38" width="80" height="4" rx="2" fill="#fafaf9" opacity="0.3"/>
+    <rect x="12" y="56" width="70" height="4" rx="2" fill="#fafaf9" opacity="0.5"/>
+    <rect x="12" y="66" width="90" height="4" rx="2" fill="#fafaf9" opacity="0.3"/>
+    <!-- Floating button -->
+    <circle cx="108" cy="88" r="8" fill="url(#amber-grad)" filter="url(#glow)"/>
+  </g>
+
+  <!-- Chat window 2 - Top Right (Claude style) -->
+  <g transform="translate(410, 70)">
+    <rect width="120" height="100" rx="8" fill="url(#card-grad)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+    <rect x="12" y="12" width="50" height="6" rx="3" fill="#d97706" opacity="0.8"/>
+    <rect x="12" y="28" width="90" height="4" rx="2" fill="#fafaf9" opacity="0.5"/>
+    <rect x="12" y="38" width="76" height="4" rx="2" fill="#fafaf9" opacity="0.3"/>
+    <rect x="12" y="56" width="84" height="4" rx="2" fill="#fafaf9" opacity="0.5"/>
+    <rect x="12" y="66" width="70" height="4" rx="2" fill="#fafaf9" opacity="0.3"/>
+    <!-- Floating button -->
+    <circle cx="108" cy="88" r="8" fill="url(#amber-grad)" filter="url(#glow)"/>
+  </g>
+
+  <!-- Chat window 3 - Bottom Left (Gemini style) -->
+  <g transform="translate(70, 230)">
+    <rect width="120" height="100" rx="8" fill="url(#card-grad)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+    <rect x="12" y="12" width="55" height="6" rx="3" fill="#4285f4" opacity="0.8"/>
+    <rect x="12" y="28" width="80" height="4" rx="2" fill="#fafaf9" opacity="0.5"/>
+    <rect x="12" y="38" width="96" height="4" rx="2" fill="#fafaf9" opacity="0.3"/>
+    <rect x="12" y="56" width="72" height="4" rx="2" fill="#fafaf9" opacity="0.5"/>
+    <rect x="12" y="66" width="88" height="4" rx="2" fill="#fafaf9" opacity="0.3"/>
+    <!-- Floating button -->
+    <circle cx="108" cy="88" r="8" fill="url(#amber-grad)" filter="url(#glow)"/>
+  </g>
+
+  <!-- Chat window 4 - Bottom Right (Grok style) -->
+  <g transform="translate(410, 210)">
+    <rect width="120" height="100" rx="8" fill="url(#card-grad)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+    <rect x="12" y="12" width="45" height="6" rx="3" fill="#ffffff" opacity="0.8"/>
+    <rect x="12" y="28" width="88" height="4" rx="2" fill="#fafaf9" opacity="0.5"/>
+    <rect x="12" y="38" width="70" height="4" rx="2" fill="#fafaf9" opacity="0.3"/>
+    <rect x="12" y="56" width="94" height="4" rx="2" fill="#fafaf9" opacity="0.5"/>
+    <rect x="12" y="66" width="78" height="4" rx="2" fill="#fafaf9" opacity="0.3"/>
+    <!-- Floating button -->
+    <circle cx="108" cy="88" r="8" fill="url(#amber-grad)" filter="url(#glow)"/>
+  </g>
+
+  <!-- Decorative particles -->
+  <circle cx="250" cy="100" r="2" fill="url(#amber-grad)" opacity="0.6"/>
+  <circle cx="350" cy="90" r="1.5" fill="url(#amber-grad)" opacity="0.4"/>
+  <circle cx="220" cy="300" r="2" fill="url(#amber-grad)" opacity="0.5"/>
+  <circle cx="380" cy="310" r="1.5" fill="url(#amber-grad)" opacity="0.4"/>
+</svg>

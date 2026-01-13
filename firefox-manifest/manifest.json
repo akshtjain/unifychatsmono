@@ -1,0 +1,80 @@
+{
+  "manifest_version": 2,
+  "name": "UnifyChats",
+  "version": "1.1.0",
+  "description": "Floating index to navigate messages in AI chat interfaces. Sync across devices with unifychats.app.",
+  "background": {
+    "scripts": [
+      "background.js"
+    ],
+    "persistent": false
+  },
+  "web_accessible_resources": [
+    "onboarding/*"
+  ],
+  "permissions": [
+    "storage",
+    "tabs",
+    "https://chat.openai.com/*",
+    "https://chatgpt.com/*",
+    "https://claude.ai/*",
+    "https://gemini.google.com/*",
+    "https://grok.com/*",
+    "https://x.com/i/grok*",
+    "https://*.convex.cloud/*",
+    "http://localhost:3000/*",
+    "https://unifychats.app/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chat.openai.com/*",
+        "https://chatgpt.com/*",
+        "https://claude.ai/*",
+        "https://gemini.google.com/*",
+        "https://grok.com/*",
+        "https://x.com/i/grok*"
+      ],
+      "js": [
+        "content/providers/chatgpt.js",
+        "content/providers/claude.js",
+        "content/providers/gemini.js",
+        "content/providers/grok.js",
+        "content/content.js"
+      ],
+      "css": [
+        "content/content.css"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "http://localhost:3000/*",
+        "https://unifychats.app/*"
+      ],
+      "js": [
+        "content/website-auth.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "browser_action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "unifychats@example.com",
+      "strict_min_version": "109.0"
+    }
+  }
+}

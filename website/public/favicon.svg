@@ -1,0 +1,21 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="amber" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Simplified card shape -->
+  <rect x="4" y="6" width="24" height="22" rx="3" fill="#1c1c1f" stroke="url(#amber)" stroke-width="1.5"/>
+
+  <!-- Corner fold -->
+  <path d="M22 6 L28 6 L28 12 L22 6 Z" fill="url(#amber)" opacity="0.8"/>
+
+  <!-- Lines -->
+  <rect x="8" y="12" width="12" height="2" rx="1" fill="#fafaf9" opacity="0.9"/>
+  <rect x="8" y="17" width="16" height="2" rx="1" fill="#fafaf9" opacity="0.5"/>
+
+  <!-- Dot -->
+  <circle cx="24" cy="24" r="3" fill="url(#amber)"/>
+</svg>

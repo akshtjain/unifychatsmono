@@ -1,0 +1,23 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Abstract index card / unified chat bubbles shape -->
+  <defs>
+    <linearGradient id="amber-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Main shape - stacked cards representing unified chats -->
+  <rect x="24" y="32" width="80" height="72" rx="8" fill="#1c1c1f" stroke="url(#amber-gradient)" stroke-width="2"/>
+
+  <!-- Folded corner accent -->
+  <path d="M88 32 L104 32 L104 48 L88 32 Z" fill="url(#amber-gradient)" opacity="0.8"/>
+
+  <!-- Index lines representing chat organization -->
+  <rect x="36" y="52" width="40" height="4" rx="2" fill="#fafaf9" opacity="0.9"/>
+  <rect x="36" y="64" width="56" height="4" rx="2" fill="#fafaf9" opacity="0.5"/>
+  <rect x="36" y="76" width="48" height="4" rx="2" fill="#fafaf9" opacity="0.3"/>
+
+  <!-- Floating indicator dot -->
+  <circle cx="96" cy="88" r="6" fill="url(#amber-gradient)"/>
+</svg>
