@@ -406,6 +406,7 @@ export const stats = query({
       claude: 0,
       gemini: 0,
       grok: 0,
+      perplexity: 0,
     };
 
     let totalMessages = 0;

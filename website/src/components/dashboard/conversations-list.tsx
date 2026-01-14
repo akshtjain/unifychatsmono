@@ -17,13 +17,14 @@ import {
 import { MoreHorizontalIcon, FolderIcon, Trash2, ExternalLink, FolderMinus, MessageSquare, Clock, RefreshCw, BookOpen } from "lucide-react";
 import { ChatReader } from "./chat-reader";
 
-type Provider = "chatgpt" | "claude" | "gemini" | "grok";
+type Provider = "chatgpt" | "claude" | "gemini" | "grok" | "perplexity";
 
 const providerColors: Record<Provider, string> = {
   chatgpt: "bg-platform-chatgpt/10 text-platform-chatgpt border-platform-chatgpt/20",
   claude: "bg-platform-claude/10 text-platform-claude border-platform-claude/20",
   gemini: "bg-platform-gemini/10 text-platform-gemini border-platform-gemini/20",
   grok: "bg-platform-grok/10 text-platform-grok border-platform-grok/20",
+  perplexity: "bg-platform-perplexity/10 text-platform-perplexity border-platform-perplexity/20",
 };
 
 const providerBgColors: Record<Provider, string> = {
@@ -31,6 +32,7 @@ const providerBgColors: Record<Provider, string> = {
   claude: "bg-platform-claude",
   gemini: "bg-platform-gemini",
   grok: "bg-platform-grok",
+  perplexity: "bg-platform-perplexity",
 };
 
 const providerNames: Record<Provider, string> = {
@@ -38,6 +40,7 @@ const providerNames: Record<Provider, string> = {
   claude: "Claude",
   gemini: "Gemini",
   grok: "Grok",
+  perplexity: "Perplexity",
 };
 
 function formatRelativeTime(timestamp: number): string {
@@ -149,7 +152,7 @@ export function ConversationsList({ projectId }: ConversationsListProps) {
         >
           All
         </button>
-        {(["chatgpt", "claude", "gemini", "grok"] as Provider[]).map(
+        {(["chatgpt", "claude", "gemini", "grok", "perplexity"] as Provider[]).map(
           (provider) => (
             <button
               key={provider}

@@ -6,13 +6,14 @@ import { useState, useMemo } from "react";
 import { BookmarkButton } from "./bookmark-button";
 import { Id } from "../../../convex/_generated/dataModel";
 
-type Provider = "chatgpt" | "claude" | "gemini" | "grok";
+type Provider = "chatgpt" | "claude" | "gemini" | "grok" | "perplexity";
 
 const providerColors: Record<Provider, string> = {
   chatgpt: "bg-platform-chatgpt/10 text-platform-chatgpt",
   claude: "bg-platform-claude/10 text-platform-claude",
   gemini: "bg-platform-gemini/10 text-platform-gemini",
   grok: "bg-platform-grok/10 text-platform-grok",
+  perplexity: "bg-platform-perplexity/10 text-platform-perplexity",
 };
 
 export function SearchMessages() {

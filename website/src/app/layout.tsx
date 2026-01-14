@@ -16,27 +16,30 @@ const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 export const metadata: Metadata = {
   title: "UnifyChats - Navigate Your AI Conversations",
   description:
-    "A free browser extension that adds a floating index to ChatGPT, Claude, Gemini, and Grok. Jump to any message instantly.",
+    "A free browser extension that adds a floating index to ChatGPT, Claude, Gemini, Grok, and Perplexity. Jump to any message instantly.",
   keywords: [
     "AI chat",
     "ChatGPT",
     "Claude",
     "Gemini",
     "Grok",
+    "Perplexity",
     "browser extension",
     "chat navigation",
   ],
+  manifest: "/manifest.json",
   openGraph: {
     title: "UnifyChats - Navigate Your AI Conversations",
     description:
-      "A free browser extension that adds a floating index to ChatGPT, Claude, Gemini, and Grok.",
+      "A free browser extension that adds a floating index to ChatGPT, Claude, Gemini, Grok, and Perplexity.",
     type: "website",
+    siteName: "UnifyChats",
   },
   twitter: {
     card: "summary_large_image",
     title: "UnifyChats - Navigate Your AI Conversations",
     description:
-      "A free browser extension that adds a floating index to ChatGPT, Claude, Gemini, and Grok.",
+      "A free browser extension that adds a floating index to ChatGPT, Claude, Gemini, Grok, and Perplexity.",
   },
 };
 

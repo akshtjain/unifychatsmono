@@ -5,7 +5,8 @@ export const providerType = v.union(
   v.literal("chatgpt"),
   v.literal("claude"),
   v.literal("gemini"),
-  v.literal("grok")
+  v.literal("grok"),
+  v.literal("perplexity")
 );
 
 export default defineSchema({

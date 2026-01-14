@@ -17,7 +17,7 @@ export default function SignInPage() {
             headerTitle: "text-white",
             headerSubtitle: "text-gray-400",
             socialButtonsBlockButton:
-              "bg-surface-elevated border-border hover:bg-surface-overlay",
+              "bg-surface-elevated border-border hover:bg-surface-overlay text-white",
             formFieldLabel: "text-gray-300",
             formFieldInput:
               "bg-surface-elevated border-border text-white placeholder:text-gray-500",

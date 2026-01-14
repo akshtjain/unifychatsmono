@@ -65,9 +65,10 @@ const config: Config = {
         // Static colors for specific use cases
         platform: {
           chatgpt: "#10a37f",
-          claude: "#d97706",
+          claude: "#d97757",
           gemini: "#4285f4",
           grok: "#ffffff",
+          perplexity: "#20b8cd",
         },
 
         // Semantic colors
