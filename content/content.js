@@ -944,6 +944,10 @@
     } else if (currentProvider.id === 'claude') {
       const match = url.match(/\/chat\/([a-zA-Z0-9-]+)/);
       externalId = match ? match[1] : url;
+    } else if (currentProvider.id === 'perplexity') {
+      // Perplexity uses /search/... or /thread/... URLs
+      const match = url.match(/\/(search|thread)\/([a-zA-Z0-9-]+)/);
+      externalId = match ? match[2] : url;
     }
 
     // Try to get title from page
@@ -954,6 +958,8 @@
       .replace(/ - Claude$/, '')
       .replace(/ - Gemini$/, '')
       .replace(/ \| Grok$/, '')
+      .replace(/ - Perplexity$/, '')
+      .replace(/ \| Perplexity$/, '')
       .trim();
 
     return {

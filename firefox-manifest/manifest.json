@@ -22,6 +22,8 @@
     "https://gemini.google.com/*",
     "https://grok.com/*",
     "https://x.com/i/grok*",
+    "https://perplexity.ai/*",
+    "https://www.perplexity.ai/*",
     "https://*.convex.cloud/*",
     "http://localhost:3000/*",
     "https://unifychats.app/*"
@@ -34,7 +36,9 @@
         "https://claude.ai/*",
         "https://gemini.google.com/*",
         "https://grok.com/*",
-        "https://x.com/i/grok*"
+        "https://x.com/i/grok*",
+        "https://perplexity.ai/*",
+        "https://www.perplexity.ai/*"
       ],
       "js": [
         "config.js",
@@ -42,6 +46,7 @@
         "content/providers/claude.js",
         "content/providers/gemini.js",
         "content/providers/grok.js",
+        "content/providers/perplexity.js",
         "content/content.js"
       ],
       "css": [
