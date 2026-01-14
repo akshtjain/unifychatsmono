@@ -30,6 +30,8 @@
   let dragOffset = { x: 0, y: 0 };
   let panelPosition = { x: null, y: null };
   let isSyncing = false;
+  let bookmarkedIndices = new Set(); // Track bookmarked message indices
+  let isBookmarkingIndex = null; // Track which message is currently being bookmarked
 
   // Auto-sync state
   let autoSyncEnabled = false;
@@ -87,9 +89,28 @@
         <button class="ai-chat-index-close" title="Close">&times;</button>
       </div>
       <div class="ai-chat-index-controls">
-        <button class="ai-chat-index-filter active" data-filter="all">All</button>
-        <button class="ai-chat-index-filter" data-filter="user">User</button>
-        <button class="ai-chat-index-filter" data-filter="assistant">Assistant</button>
+        <select class="ai-chat-index-filter-select">
+          <option value="all">All Messages</option>
+          <option value="user">You Only</option>
+          <option value="assistant">AI Only</option>
+        </select>
+        <div class="ai-chat-index-quick-links">
+          <a href="https://chatgpt.com" target="_blank" class="ai-chat-index-quick-link" title="ChatGPT">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.896zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08L8.704 5.46a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z"/></svg>
+          </a>
+          <a href="https://claude.ai" target="_blank" class="ai-chat-index-quick-link" title="Claude">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M4.709 15.955l4.72-2.647.08-.08-.08-.1-2.786-2.38a.424.424 0 0 1-.149-.313.39.39 0 0 1 .129-.303c.079-.069.189-.119.299-.129a.47.47 0 0 1 .318.1l3.662 3.085a.465.465 0 0 1 .159.338l-.03.05-5.307 3.055c-.199.12-.428.05-.538-.139-.09-.169-.06-.398.12-.517l-.597-.02zM19.291 15.955l-4.72-2.647-.08-.08.08-.1 2.786-2.38a.424.424 0 0 0 .149-.313.39.39 0 0 0-.129-.303.456.456 0 0 0-.299-.129.47.47 0 0 0-.318.1l-3.662 3.085a.465.465 0 0 0-.159.338l.03.05 5.307 3.055c.199.12.428.05.538-.139.09-.169.06-.398-.12-.517l.597-.02zM12 4c.552 0 1 .448 1 1v4c0 .552-.448 1-1 1s-1-.448-1-1V5c0-.552.448-1 1-1zm0 10c.552 0 1 .448 1 1v4c0 .552-.448 1-1 1s-1-.448-1-1v-4c0-.552.448-1 1-1z"/></svg>
+          </a>
+          <a href="https://gemini.google.com" target="_blank" class="ai-chat-index-quick-link" title="Gemini">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 24A14.304 14.304 0 0 0 12 0a14.304 14.304 0 0 0 0 24zM6.5 12c0-1.5.5-2.9 1.3-4a5.5 5.5 0 0 1 8.4 0c.8 1.1 1.3 2.5 1.3 4s-.5 2.9-1.3 4a5.5 5.5 0 0 1-8.4 0c-.8-1.1-1.3-2.5-1.3-4z"/></svg>
+          </a>
+          <a href="https://grok.x.ai" target="_blank" class="ai-chat-index-quick-link" title="Grok">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="https://perplexity.ai" target="_blank" class="ai-chat-index-quick-link" title="Perplexity">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </a>
+        </div>
       </div>
       <div class="ai-chat-index-list"></div>
       <div class="ai-chat-index-footer">
@@ -130,13 +151,9 @@
       setAutoSyncEnabled(e.target.checked);
     });
 
-    // Filter buttons
-    panel.querySelectorAll('.ai-chat-index-filter').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        panel.querySelectorAll('.ai-chat-index-filter').forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        updateMessageList(e.target.dataset.filter);
-      });
+    // Filter dropdown
+    panel.querySelector('.ai-chat-index-filter-select').addEventListener('change', (e) => {
+      updateMessageList(e.target.value);
     });
 
     messageList = panel.querySelector('.ai-chat-index-list');
@@ -155,6 +172,8 @@
       updateMessageList();
       positionPanel();
       checkAuthStatus();
+      // Fetch bookmark status when panel opens
+      fetchBookmarkStatus();
     }
   }
 
@@ -218,10 +237,14 @@
     let count = 0;
     let userCount = 0;
     let assistantCount = 0;
+    let messageIndex = 0;
 
-    messages.forEach((msgEl, index) => {
+    messages.forEach((msgEl) => {
       const msgData = currentProvider.parseMessage(msgEl);
       if (!msgData.preview) return;
+
+      const currentIndex = messageIndex;
+      messageIndex++;
 
       if (msgData.role === 'user') userCount++;
       else assistantCount++;
@@ -229,14 +252,35 @@
       if (filter !== 'all' && msgData.role !== filter) return;
 
       count++;
+      const isBookmarked = bookmarkedIndices.has(currentIndex);
+      const isBookmarking = isBookmarkingIndex === currentIndex;
+
       const item = document.createElement('div');
       item.className = `ai-chat-index-item ai-chat-index-item-${msgData.role}`;
       item.innerHTML = `
         <span class="ai-chat-index-role">${msgData.role === 'user' ? 'You' : 'AI'}</span>
         <span class="ai-chat-index-preview">${escapeHtml(msgData.preview)}${msgData.fullText.length > 50 ? '...' : ''}</span>
+        <button class="ai-chat-index-bookmark-btn ${isBookmarked ? 'bookmarked' : ''} ${isBookmarking ? 'loading' : ''}" data-index="${currentIndex}" title="${isBookmarked ? 'Remove bookmark' : 'Bookmark this message'}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="${isBookmarked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </button>
       `;
 
-      item.addEventListener('click', () => scrollToMessage(msgData.element));
+      // Click on item scrolls to message
+      item.addEventListener('click', (e) => {
+        if (!e.target.closest('.ai-chat-index-bookmark-btn')) {
+          scrollToMessage(msgData.element);
+        }
+      });
+
+      // Bookmark button click handler
+      const bookmarkBtn = item.querySelector('.ai-chat-index-bookmark-btn');
+      bookmarkBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        handleBookmarkClick(currentIndex);
+      });
+
       messageList.appendChild(item);
     });
 
@@ -247,6 +291,141 @@
     // Update provider name
     const providerLabel = panel.querySelector('.ai-chat-index-provider');
     providerLabel.textContent = currentProvider.name;
+  }
+
+  // Handle bookmark button click
+  async function handleBookmarkClick(messageIndex) {
+    if (isBookmarkingIndex !== null) return; // Already bookmarking
+
+    // Check auth first
+    const authStatus = await new Promise(resolve => {
+      chrome.runtime.sendMessage({ type: 'GET_AUTH_STATUS' }, resolve);
+    });
+
+    if (!authStatus?.isAuthenticated) {
+      const statusEl = panel?.querySelector('.ai-chat-index-sync-status');
+      if (statusEl) {
+        statusEl.textContent = 'Sign in to bookmark';
+        statusEl.style.color = '#f87171';
+        setTimeout(() => { statusEl.textContent = ''; }, 3000);
+      }
+      return;
+    }
+
+    // Get conversation data for the bookmark request
+    const conversationData = collectConversationData();
+
+    isBookmarkingIndex = messageIndex;
+    updateBookmarkButtonUI(messageIndex, true);
+
+    try {
+      const response = await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({
+          type: 'TOGGLE_BOOKMARK',
+          data: {
+            provider: conversationData.provider,
+            externalId: conversationData.externalId,
+            messageIndex: messageIndex
+          }
+        }, (response) => {
+          if (chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+          } else if (response?.success) {
+            resolve(response.data);
+          } else {
+            reject(new Error(response?.error || 'Bookmark failed'));
+          }
+        });
+      });
+
+      // Update local state
+      if (response.bookmarked) {
+        bookmarkedIndices.add(messageIndex);
+      } else {
+        bookmarkedIndices.delete(messageIndex);
+      }
+
+      updateBookmarkButtonUI(messageIndex, false, response.bookmarked);
+
+    } catch (error) {
+      console.error('[UnifyChats] Bookmark error:', error);
+      const statusEl = panel?.querySelector('.ai-chat-index-sync-status');
+      if (statusEl) {
+        // Show helpful message for common errors
+        if (error.message.includes('sync') || error.message.includes('not found')) {
+          statusEl.textContent = 'Sync first to bookmark';
+        } else {
+          statusEl.textContent = error.message || 'Bookmark failed';
+        }
+        statusEl.style.color = '#f87171';
+        setTimeout(() => { statusEl.textContent = ''; }, 3000);
+      }
+      updateBookmarkButtonUI(messageIndex, false);
+    } finally {
+      isBookmarkingIndex = null;
+    }
+  }
+
+  // Update bookmark button UI
+  function updateBookmarkButtonUI(index, isLoading, isBookmarked = null) {
+    const btn = messageList?.querySelector(`.ai-chat-index-bookmark-btn[data-index="${index}"]`);
+    if (!btn) return;
+
+    if (isLoading) {
+      btn.classList.add('loading');
+    } else {
+      btn.classList.remove('loading');
+      if (isBookmarked !== null) {
+        btn.classList.toggle('bookmarked', isBookmarked);
+        const svg = btn.querySelector('svg path');
+        if (svg) {
+          svg.setAttribute('fill', isBookmarked ? 'currentColor' : 'none');
+        }
+        btn.title = isBookmarked ? 'Remove bookmark' : 'Bookmark this message';
+      }
+    }
+  }
+
+  // Fetch bookmark status for current conversation
+  async function fetchBookmarkStatus() {
+    try {
+      const authStatus = await new Promise(resolve => {
+        chrome.runtime.sendMessage({ type: 'GET_AUTH_STATUS' }, resolve);
+      });
+
+      if (!authStatus?.isAuthenticated) return;
+
+      const conversationData = collectConversationData();
+
+      const response = await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage({
+          type: 'GET_BOOKMARK_STATUS',
+          data: {
+            provider: conversationData.provider,
+            externalId: conversationData.externalId
+          }
+        }, (response) => {
+          if (chrome.runtime.lastError) {
+            reject(new Error(chrome.runtime.lastError.message));
+          } else if (response?.success) {
+            resolve(response.data);
+          } else {
+            reject(new Error(response?.error || 'Failed to get bookmark status'));
+          }
+        });
+      });
+
+      // Update local state
+      bookmarkedIndices = new Set(response.bookmarkedIndices || []);
+
+      // Re-render message list to show bookmark states
+      const filter = panel?.querySelector('.ai-chat-index-filter-select')?.value || 'all';
+      updateMessageList(filter);
+
+    } catch (error) {
+      // Silently fail - bookmarks just won't be shown
+      console.log('[UnifyChats] Could not fetch bookmark status:', error.message);
+    }
   }
 
   // Scroll to a message
@@ -338,7 +517,7 @@
     }
 
     // Refresh the message list with current conversation
-    const filter = panel.querySelector('.ai-chat-index-filter.active')?.dataset.filter || 'all';
+    const filter = panel.querySelector('.ai-chat-index-filter-select')?.value || 'all';
     updateMessageList(filter);
 
     // Re-setup observer in case conversation container changed
@@ -810,7 +989,7 @@
       // Debounce updates for UI
       clearTimeout(window.__aiChatIndexUpdateTimeout);
       window.__aiChatIndexUpdateTimeout = setTimeout(() => {
-        const filter = panel.querySelector('.ai-chat-index-filter.active')?.dataset.filter || 'all';
+        const filter = panel.querySelector('.ai-chat-index-filter-select')?.value || 'all';
         updateMessageList(filter);
       }, 300);
 
@@ -863,6 +1042,9 @@
     // Reset sync hash since we're on a new conversation
     lastSyncHash = null;
 
+    // Reset bookmarks for new conversation
+    bookmarkedIndices = new Set();
+
     // Show loading indicator
     const refreshBtn = panel?.querySelector('.ai-chat-index-refresh-btn');
     if (refreshBtn) refreshBtn.classList.add('spinning');
@@ -870,7 +1052,7 @@
     // Wait a moment for the new conversation to load, then refresh
     setTimeout(() => {
       // Update the message list
-      const filter = panel?.querySelector('.ai-chat-index-filter.active')?.dataset.filter || 'all';
+      const filter = panel?.querySelector('.ai-chat-index-filter-select')?.value || 'all';
       updateMessageList(filter);
 
       // Re-setup observer for new conversation container
@@ -887,6 +1069,11 @@
         activityDebounceTimer = setTimeout(() => {
           performAutoSync('navigation');
         }, 1500);
+      }
+
+      // Fetch bookmark status for the new conversation
+      if (isExpanded) {
+        fetchBookmarkStatus();
       }
     }, 800);
   }

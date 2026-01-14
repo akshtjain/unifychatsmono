@@ -2,11 +2,8 @@ import { UserButton } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/logo";
-import { DashboardStats, PlatformStats } from "@/components/dashboard/stats";
-import { ConversationsList } from "@/components/dashboard/conversations-list";
+import { DashboardContent } from "@/components/dashboard/dashboard-content";
 import { SearchMessages } from "@/components/dashboard/search";
-import { BookmarksList } from "@/components/dashboard/bookmarks";
-import { ConnectExtension } from "@/components/dashboard/connect-extension";
 
 // Check if Clerk is configured
 const clerkPubKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
@@ -58,108 +55,16 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      {/* Main content */}
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Welcome, {user.firstName || "there"}!
-          </h1>
-          <p className="text-muted-foreground">
-            Manage your synced AI conversations, search across platforms, and access your bookmarks.
-          </p>
-        </div>
-
-        {/* Stats */}
-        <DashboardStats />
-
-        {/* Platform breakdown */}
-        <div className="mb-12">
-          <h2 className="text-xl font-semibold text-foreground mb-4">
-            By Platform
-          </h2>
-          <PlatformStats />
-        </div>
-
-        {/* Search */}
-        <div className="mb-12">
-          <h2 className="text-xl font-semibold text-foreground mb-4">
-            Search Messages
-          </h2>
+      {/* Search Bar - Global */}
+      <div className="border-b border-border bg-background/50 backdrop-blur-sm sticky top-16 z-[5]">
+        <div className="max-w-7xl mx-auto px-6 py-3">
           <SearchMessages />
         </div>
+      </div>
 
-        {/* Tabs for Conversations and Bookmarks */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-12">
-          {/* Conversations */}
-          <div>
-            <h2 className="text-xl font-semibold text-foreground mb-4">
-              Your Conversations
-            </h2>
-            <ConversationsList />
-          </div>
-
-          {/* Bookmarks */}
-          <div>
-            <h2 className="text-xl font-semibold text-foreground mb-4">
-              Bookmarks
-            </h2>
-            <BookmarksList />
-          </div>
-        </div>
-
-        {/* Connect Extension */}
-        <div className="mb-12">
-          <ConnectExtension />
-        </div>
-
-        {/* Download section */}
-        <div id="download" className="p-8 bg-card rounded-2xl border border-border">
-          <h2 className="text-xl font-semibold text-foreground mb-2">
-            Download the extension
-          </h2>
-          <p className="text-muted-foreground text-sm mb-6">
-            Install UnifyChats on your browser to start syncing your
-            conversations.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <a
-              href="/unifychats-chrome.zip"
-              download
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-colors"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="w-4 h-4"
-              >
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-              Download for Chrome
-            </a>
-            <a
-              href="/unifychats-firefox.zip"
-              download
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-secondary text-secondary-foreground border border-border rounded-xl font-medium hover:bg-secondary/80 transition-colors"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="w-4 h-4"
-              >
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-              Download for Firefox
-            </a>
-          </div>
-        </div>
+      {/* Main content */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <DashboardContent />
       </div>
     </main>
   );

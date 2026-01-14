@@ -118,3 +118,77 @@ export function PlatformStats() {
     </div>
   );
 }
+
+// Compact stats for sidebar
+export function CompactStats() {
+  const stats = useQuery(api.conversations.stats);
+
+  if (stats === undefined) {
+    return (
+      <div className="p-4 bg-card rounded-xl border border-border">
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex justify-between items-center">
+              <div className="h-3 w-20 bg-secondary rounded animate-pulse" />
+              <div className="h-4 w-8 bg-secondary rounded animate-pulse" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (stats === null) return null;
+
+  const platforms = [
+    { id: "chatgpt", name: "ChatGPT", color: "bg-platform-chatgpt" },
+    { id: "claude", name: "Claude", color: "bg-platform-claude" },
+    { id: "gemini", name: "Gemini", color: "bg-platform-gemini" },
+    { id: "grok", name: "Grok", color: "bg-platform-grok" },
+  ] as const;
+
+  const activePlatforms = platforms.filter(p => stats.byProvider[p.id] > 0);
+
+  return (
+    <div className="p-4 bg-card rounded-xl border border-border">
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
+        Quick Stats
+      </p>
+
+      <div className="space-y-2.5">
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-muted-foreground">Conversations</span>
+          <span className="text-sm font-semibold text-foreground">{stats.totalConversations}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-muted-foreground">Messages</span>
+          <span className="text-sm font-semibold text-foreground">{stats.totalMessages}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-muted-foreground">Saved</span>
+          <span className="text-sm font-semibold text-foreground">{stats.totalBookmarks}</span>
+        </div>
+      </div>
+
+      {activePlatforms.length > 0 && (
+        <div className="border-t border-border mt-3 pt-3">
+          <p className="text-xs text-muted-foreground mb-2">By Platform</p>
+          <div className="space-y-1.5">
+            {activePlatforms.map((platform) => (
+              <div
+                key={platform.id}
+                className="flex items-center justify-between text-xs"
+              >
+                <span className="flex items-center gap-1.5 text-muted-foreground">
+                  <span className={`w-2 h-2 rounded-full ${platform.color}`} />
+                  {platform.name}
+                </span>
+                <span className="text-foreground font-medium">{stats.byProvider[platform.id]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -7,6 +7,8 @@ import { internal } from "./_generated/api";
 export const list = query({
   args: {
     provider: v.optional(providerType),
+    projectId: v.optional(v.id("projects")),
+    unassigned: v.optional(v.boolean()), // If true, only return conversations without a project
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -16,6 +18,40 @@ export const list = query({
 
     const userId = identity.subject;
 
+    // Filter by project
+    if (args.projectId !== undefined) {
+      const conversations = await ctx.db
+        .query("conversations")
+        .withIndex("by_user_project", (q) =>
+          q.eq("userId", userId).eq("projectId", args.projectId)
+        )
+        .order("desc")
+        .collect();
+
+      // Further filter by provider if specified
+      if (args.provider) {
+        return conversations.filter((c) => c.provider === args.provider);
+      }
+      return conversations;
+    }
+
+    // Filter for unassigned conversations only
+    if (args.unassigned) {
+      const allConversations = await ctx.db
+        .query("conversations")
+        .withIndex("by_user", (q) => q.eq("userId", userId))
+        .order("desc")
+        .collect();
+
+      const unassigned = allConversations.filter((c) => !c.projectId);
+
+      if (args.provider) {
+        return unassigned.filter((c) => c.provider === args.provider);
+      }
+      return unassigned;
+    }
+
+    // No project filter - return all or filter by provider
     if (args.provider) {
       return await ctx.db
         .query("conversations")
@@ -284,6 +320,68 @@ export const syncFromExtensionInternal = internalMutation({
     }
 
     return conversationId;
+  },
+});
+
+// Assign a conversation to a project
+export const assignToProject = mutation({
+  args: {
+    conversationId: v.id("conversations"),
+    projectId: v.optional(v.id("projects")), // Pass undefined to unassign
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    const conversation = await ctx.db.get(args.conversationId);
+    if (!conversation || conversation.userId !== identity.subject) {
+      throw new Error("Conversation not found");
+    }
+
+    // Verify project belongs to user if provided
+    if (args.projectId) {
+      const project = await ctx.db.get(args.projectId);
+      if (!project || project.userId !== identity.subject) {
+        throw new Error("Project not found");
+      }
+    }
+
+    await ctx.db.patch(args.conversationId, {
+      projectId: args.projectId,
+    });
+  },
+});
+
+// Bulk assign conversations to a project
+export const bulkAssignToProject = mutation({
+  args: {
+    conversationIds: v.array(v.id("conversations")),
+    projectId: v.optional(v.id("projects")),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    // Verify project belongs to user if provided
+    if (args.projectId) {
+      const project = await ctx.db.get(args.projectId);
+      if (!project || project.userId !== identity.subject) {
+        throw new Error("Project not found");
+      }
+    }
+
+    for (const convId of args.conversationIds) {
+      const conversation = await ctx.db.get(convId);
+      if (conversation && conversation.userId === identity.subject) {
+        await ctx.db.patch(convId, {
+          projectId: args.projectId,
+        });
+      }
+    }
   },
 });
 

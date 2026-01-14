@@ -93,6 +93,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     return false;
   }
+
+  if (message.type === 'TOGGLE_BOOKMARK') {
+    handleToggleBookmark(message.data)
+      .then(result => sendResponse({ success: true, data: result }))
+      .catch(error => sendResponse({ success: false, error: error.message }));
+    return true;
+  }
+
+  if (message.type === 'GET_BOOKMARK_STATUS') {
+    handleGetBookmarkStatus(message.data)
+      .then(result => sendResponse({ success: true, data: result }))
+      .catch(error => sendResponse({ success: false, error: error.message }));
+    return true;
+  }
 });
 
 // Get authentication status
@@ -153,6 +167,66 @@ async function handleSync(data) {
     console.error('[UnifyChats] Sync error:', error);
     throw error;
   }
+}
+
+// Handle toggle bookmark request
+async function handleToggleBookmark(data) {
+  const { authToken, convexUrl } = await new Promise((resolve) => {
+    chrome.storage.sync.get(['authToken', 'convexUrl'], resolve);
+  });
+
+  if (!authToken || !convexUrl) {
+    throw new Error('Not authenticated');
+  }
+
+  const bookmarkUrl = convexUrl.replace('.convex.cloud', '.convex.site') + '/bookmark';
+
+  const response = await fetch(bookmarkUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken}`
+    },
+    body: JSON.stringify(data)
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || result.error || 'Bookmark failed');
+  }
+
+  return result;
+}
+
+// Handle get bookmark status request
+async function handleGetBookmarkStatus(data) {
+  const { authToken, convexUrl } = await new Promise((resolve) => {
+    chrome.storage.sync.get(['authToken', 'convexUrl'], resolve);
+  });
+
+  if (!authToken || !convexUrl) {
+    throw new Error('Not authenticated');
+  }
+
+  const statusUrl = convexUrl.replace('.convex.cloud', '.convex.site') + '/bookmarks/status';
+
+  const response = await fetch(statusUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken}`
+    },
+    body: JSON.stringify(data)
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.error || 'Failed to get bookmark status');
+  }
+
+  return result;
 }
 
 // Listen for messages from the website (for auth token transfer)

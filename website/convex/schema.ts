@@ -9,6 +9,16 @@ export const providerType = v.union(
 );
 
 export default defineSchema({
+  // Projects for organizing conversations
+  projects: defineTable({
+    userId: v.string(), // Clerk user ID
+    name: v.string(),
+    description: v.optional(v.string()),
+    color: v.string(), // Hex color for visual identification
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"]),
+
   // User conversations synced from different AI platforms
   conversations: defineTable({
     userId: v.string(), // Clerk user ID
@@ -19,10 +29,12 @@ export default defineSchema({
     messageCount: v.number(),
     lastSyncedAt: v.number(),
     createdAt: v.number(),
+    projectId: v.optional(v.id("projects")), // Optional project assignment
   })
     .index("by_user", ["userId"])
     .index("by_user_provider", ["userId", "provider"])
-    .index("by_external", ["userId", "provider", "externalId"]),
+    .index("by_external", ["userId", "provider", "externalId"])
+    .index("by_user_project", ["userId", "projectId"]),
 
   // Individual messages within conversations
   messages: defineTable({

@@ -138,34 +138,70 @@
 /* Filter Controls */
 .ai-chat-index-controls {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 8px 12px;
-  gap: 6px;
+  gap: 10px;
   background: rgba(255, 255, 255, 0.03);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.ai-chat-index-filter {
-  flex: 1;
-  padding: 6px 10px;
-  border: none;
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.6);
+.ai-chat-index-filter-select {
+  padding: 5px 24px 5px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #18181b url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center;
+  color: rgba(255, 255, 255, 0.9);
   border-radius: 6px;
   font-size: 12px;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition: background-color 0.2s, border-color 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  font-family: inherit;
 }
 
-.ai-chat-index-filter:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
+.ai-chat-index-filter-select:hover {
+  background-color: #27272a;
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
-.ai-chat-index-filter.active {
-  background: #27272a;
-  /* zinc-800 */
+.ai-chat-index-filter-select:focus {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.ai-chat-index-filter-select option {
+  background: #18181b;
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Quick Links */
+.ai-chat-index-quick-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ai-chat-index-quick-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.4);
+  background: transparent;
+  transition: background 0.15s, color 0.15s;
+  text-decoration: none;
+}
+
+.ai-chat-index-quick-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.ai-chat-index-quick-link:active {
+  transform: scale(0.95);
 }
 
 /* Message List */
@@ -450,4 +486,50 @@
 /* Light mode support - detect if page is light themed */
 @media (prefers-color-scheme: light) {
   /* Keep dark theme for now as most AI chats have dark modes */
+}
+
+/* Bookmark Button */
+.ai-chat-index-bookmark-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, opacity 0.15s;
+  opacity: 0;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.ai-chat-index-item:hover .ai-chat-index-bookmark-btn {
+  opacity: 1;
+}
+
+.ai-chat-index-bookmark-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ai-chat-index-bookmark-btn.bookmarked {
+  opacity: 1;
+  color: #fbbf24; /* amber-400 */
+}
+
+.ai-chat-index-bookmark-btn.bookmarked:hover {
+  color: #f59e0b; /* amber-500 */
+  background: rgba(251, 191, 36, 0.15);
+}
+
+.ai-chat-index-bookmark-btn.loading {
+  opacity: 1;
+  cursor: wait;
+}
+
+.ai-chat-index-bookmark-btn.loading svg {
+  animation: pulse 0.8s ease-in-out infinite;
 }
