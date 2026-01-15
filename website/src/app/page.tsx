@@ -1,8 +1,12 @@
 import { Nav } from "@/components/nav";
 import { PlatformGrid, PlatformIcons } from "@/components/platform-icons";
+import { HowItWorks } from "@/components/how-it-works";
+import { DashboardPreview } from "@/components/dashboard-preview";
 import { Features } from "@/components/features";
+import { UseCases } from "@/components/use-cases";
 import { InstallGuide } from "@/components/install-guide";
 import { FAQ } from "@/components/faq";
+import { EmailCapture } from "@/components/email-capture";
 import { Footer } from "@/components/footer";
 
 export default function Home() {
@@ -29,15 +33,15 @@ export default function Home() {
 
           {/* Headline */}
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
-            <span className="text-gradient">Never lose track of</span>
+            <span className="text-gradient">One place for all your</span>
             <br />
-            <span className="text-white">your AI conversations</span>
+            <span className="text-white">AI conversations</span>
           </h1>
 
           {/* Subheadline */}
           <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-10">
-            A browser extension that adds a floating index to ChatGPT, Claude,
-            Gemini, and Grok. Jump to any message in seconds.
+            Search, sync, and organize conversations across ChatGPT, Claude,
+            Gemini, Grok, and Perplexity. Your AI knowledge, always at your fingertips.
           </p>
 
           {/* CTA Buttons */}
@@ -60,10 +64,10 @@ export default function Home() {
               Install Now — It&apos;s Free
             </a>
             <a
-              href="#features"
+              href="/dashboard"
               className="inline-flex items-center gap-2 h-12 px-6 bg-surface border border-border rounded-xl font-medium text-gray-300 hover:text-white hover:border-border-accent transition-all"
             >
-              See how it works
+              Try the dashboard
             </a>
           </div>
 
@@ -75,107 +79,38 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Demo visual */}
-      <section className="pb-20 md:pb-32">
+      {/* How It Works */}
+      <HowItWorks />
+
+      {/* Extension Screenshot */}
+      <section className="pb-16 md:pb-24">
         <div className="max-w-5xl mx-auto px-6">
-          <div className="relative rounded-2xl border border-border overflow-hidden bg-surface shadow-surface-lg">
-            {/* Browser chrome */}
-            <div className="flex items-center gap-2 px-4 py-3 bg-gray-900/50 border-b border-border">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                <div className="w-3 h-3 rounded-full bg-green-500/80" />
-              </div>
-              <div className="flex-1 flex justify-center">
-                <div className="px-4 py-1 rounded-lg bg-gray-800 text-gray-400 text-xs">
-                  chatgpt.com
-                </div>
-              </div>
-            </div>
-
-            {/* Demo content */}
-            <div className="flex">
-              {/* Chat area */}
-              <div className="flex-1 p-6 space-y-4">
-                <div className="flex justify-end">
-                  <div className="max-w-[80%] p-4 rounded-2xl rounded-tr-sm bg-accent/20 text-gray-200 text-sm">
-                    How do I center a div in CSS?
-                  </div>
-                </div>
-                <div className="flex">
-                  <div className="max-w-[80%] p-4 rounded-2xl rounded-tl-sm bg-gray-800 text-gray-300 text-sm">
-                    There are several ways to center a div. The most modern
-                    approach is using Flexbox with display: flex and
-                    justify-content: center...
-                  </div>
-                </div>
-                <div className="flex justify-end">
-                  <div className="max-w-[80%] p-4 rounded-2xl rounded-tr-sm bg-accent/20 text-gray-200 text-sm">
-                    What about CSS Grid?
-                  </div>
-                </div>
-                <div className="flex">
-                  <div className="max-w-[80%] p-4 rounded-2xl rounded-tl-sm bg-gray-800 text-gray-300 text-sm">
-                    With CSS Grid, you can use display: grid and place-items:
-                    center for an even simpler solution...
-                  </div>
-                </div>
-              </div>
-
-              {/* Index panel */}
-              <div className="w-64 border-l border-border bg-gray-900/50">
-                <div className="p-3 bg-gradient-to-r from-accent to-purple-600 text-white text-sm font-medium">
-                  Message Index
-                </div>
-                <div className="p-2 space-y-1">
-                  {[
-                    { role: "You", text: "How do I center a div..." },
-                    { role: "AI", text: "There are several ways..." },
-                    { role: "You", text: "What about CSS Grid?" },
-                    { role: "AI", text: "With CSS Grid, you can..." },
-                  ].map((msg, i) => (
-                    <div
-                      key={i}
-                      className="flex items-start gap-2 p-2 rounded-lg hover:bg-gray-800 cursor-pointer transition-colors"
-                    >
-                      <span
-                        className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
-                          msg.role === "You"
-                            ? "bg-blue-500/20 text-blue-400"
-                            : "bg-green-500/20 text-green-400"
-                        }`}
-                      >
-                        {msg.role}
-                      </span>
-                      <span className="text-xs text-gray-400 truncate">
-                        {msg.text}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Floating button indicator */}
-            <div className="absolute bottom-4 right-72 w-10 h-10 rounded-full bg-gradient-to-br from-accent to-purple-600 flex items-center justify-center shadow-glow">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="white"
-                strokeWidth="2"
-                className="w-5 h-5"
-              >
-                <line x1="8" y1="6" x2="21" y2="6" />
-                <line x1="8" y1="12" x2="21" y2="12" />
-                <line x1="8" y1="18" x2="21" y2="18" />
-                <circle cx="4" cy="6" r="1" fill="white" />
-                <circle cx="4" cy="12" r="1" fill="white" />
-                <circle cx="4" cy="18" r="1" fill="white" />
-              </svg>
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              A floating index for any AI chat
+            </h2>
+            <p className="text-gray-400">
+              Jump to any message instantly. Filter by role. Always accessible.
+            </p>
+          </div>
+          {/* Placeholder for extension screenshot */}
+          <div className="relative rounded-2xl border border-border overflow-hidden bg-surface/50 shadow-surface-lg">
+            <img
+              src="/screenshots/extension-preview.png"
+              alt="UnifyChats extension floating panel on ChatGPT"
+              className="w-full h-auto"
+              style={{ minHeight: '400px', objectFit: 'cover' }}
+            />
+            {/* Fallback placeholder if image not found */}
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-900/80 opacity-0 hover:opacity-0">
+              <p className="text-gray-500 text-sm">Extension screenshot placeholder</p>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Dashboard Preview */}
+      <DashboardPreview />
 
       {/* Supported platforms */}
       <section className="py-20 border-t border-border">
@@ -191,8 +126,10 @@ export default function Home() {
       </section>
 
       <Features />
+      <UseCases />
       <InstallGuide />
       <FAQ />
+      <EmailCapture />
       <Footer />
     </main>
   );

@@ -5,9 +5,9 @@ import { Logo } from "./logo";
 import { useState, useEffect } from "react";
 
 const navLinks = [
-  { label: "Features", href: "#features" },
-  { label: "Install", href: "#install" },
-  { label: "FAQ", href: "#faq" },
+  { label: "Features", href: "/#features" },
+  { label: "Install", href: "/#install" },
+  { label: "FAQ", href: "/#faq" },
 ];
 
 export function Nav() {
@@ -53,7 +53,7 @@ export function Nav() {
             Sign in
           </a>
           <a
-            href="#install"
+            href="/#install"
             className="inline-flex items-center h-8 px-4 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
           >
             Get Extension

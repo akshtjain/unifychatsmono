@@ -89,7 +89,7 @@ http.route({
       }
 
       // Validate provider
-      const validProviders = ["chatgpt", "claude", "gemini", "grok"];
+      const validProviders = ["chatgpt", "claude", "gemini", "grok", "perplexity"];
       if (!validProviders.includes(body.provider)) {
         return new Response(
           JSON.stringify({

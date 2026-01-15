@@ -37,6 +37,14 @@
   border-color: rgba(255, 255, 255, 0.3);
 }
 
+#ai-chat-index-btn.dragging {
+  cursor: grabbing;
+  transform: scale(1.05);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  opacity: 0.9;
+  user-select: none;
+}
+
 #ai-chat-index-btn svg {
   width: 20px;
   height: 20px;
@@ -202,6 +210,12 @@
 
 .ai-chat-index-quick-link:active {
   transform: scale(0.95);
+}
+
+.ai-chat-index-quick-link img {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
 }
 
 /* Message List */

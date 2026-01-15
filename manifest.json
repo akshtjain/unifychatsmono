@@ -19,7 +19,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "onboarding/*"
+        "onboarding/*",
+        "logos/*"
       ],
       "matches": [
         "<all_urls>"

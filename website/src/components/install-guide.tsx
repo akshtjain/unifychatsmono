@@ -35,6 +35,16 @@ const steps = {
       description:
         "Click 'Load unpacked' and select the folder you extracted in step 2.",
     },
+    {
+      title: "Create your free account",
+      description:
+        "Click the extension icon and sign up. This enables cloud sync so you can access conversations anywhere.",
+      action: {
+        label: "Sign up free",
+        href: "/sign-up",
+        newTab: true,
+      },
+    },
   ],
   firefox: [
     {
@@ -60,6 +70,16 @@ const steps = {
       description:
         "Click 'Load Temporary Add-on' and select the manifest.json file inside your extracted folder.",
     },
+    {
+      title: "Create your free account",
+      description:
+        "Click the extension icon and sign up. This enables cloud sync so you can access conversations anywhere.",
+      action: {
+        label: "Sign up free",
+        href: "/sign-up",
+        newTab: true,
+      },
+    },
   ],
 };
 
@@ -71,10 +91,10 @@ export function InstallGuide() {
       <div className="max-w-3xl mx-auto px-6">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Install in under a minute
+            Get started in 2 minutes
           </h2>
           <p className="text-gray-400 text-lg">
-            No technical knowledge required. Just follow these steps.
+            Install the extension and start syncing your AI conversations.
           </p>
         </div>
 
@@ -105,7 +125,7 @@ export function InstallGuide() {
         </div>
 
         {/* Steps */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           {steps[browser].map((step, index) => (
             <div
               key={index}
@@ -127,20 +147,37 @@ export function InstallGuide() {
                 {step.action && (
                   <a
                     href={step.action.href}
-                    download
+                    download={!step.action.newTab}
+                    target={step.action.newTab ? "_blank" : undefined}
+                    rel={step.action.newTab ? "noopener noreferrer" : undefined}
                     className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent/90 transition-colors"
                   >
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      className="w-4 h-4"
-                    >
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="7 10 12 15 17 10" />
-                      <line x1="12" y1="15" x2="12" y2="3" />
-                    </svg>
+                    {step.action.href.endsWith('.zip') ? (
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className="w-4 h-4"
+                      >
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                    ) : (
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className="w-4 h-4"
+                      >
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="8.5" cy="7" r="4" />
+                        <line x1="20" y1="8" x2="20" y2="14" />
+                        <line x1="23" y1="11" x2="17" y2="11" />
+                      </svg>
+                    )}
                     {step.action.label}
                   </a>
                 )}
@@ -164,8 +201,7 @@ export function InstallGuide() {
             <div>
               <h3 className="font-semibold text-white mb-1">You&apos;re all set!</h3>
               <p className="text-gray-400 text-sm">
-                Visit any supported AI chat and look for the purple button in the
-                bottom-right corner.
+                Visit ChatGPT, Claude, Gemini, Grok, or Perplexity. Your conversations will sync automatically.
               </p>
             </div>
           </div>
@@ -174,7 +210,7 @@ export function InstallGuide() {
         {/* Note for Firefox */}
         {browser === "firefox" && (
           <p className="text-center text-gray-500 text-sm mt-6">
-            Note: Firefox temporary add-ons need to be reloaded after browser restart.
+            Note: Firefox temporary add-ons need to be reloaded after browser restart. We&apos;re working on getting it signed.
           </p>
         )}
       </div>

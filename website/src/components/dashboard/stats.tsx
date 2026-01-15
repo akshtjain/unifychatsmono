@@ -80,7 +80,7 @@ export function DashboardStats() {
       <div className="p-6 bg-card rounded-2xl border border-border">
         <p className="text-muted-foreground text-sm mb-1">Connected Platforms</p>
         <p className="text-3xl font-bold text-foreground">{connectedPlatforms}</p>
-        <p className="text-muted-foreground/60 text-xs mt-2">of 4 available</p>
+        <p className="text-muted-foreground/60 text-xs mt-2">of 5 available</p>
       </div>
     </div>
   );
@@ -96,6 +96,7 @@ export function PlatformStats() {
     { id: "claude", name: "Claude", color: "text-platform-claude" },
     { id: "gemini", name: "Gemini", color: "text-platform-gemini" },
     { id: "grok", name: "Grok", color: "text-platform-grok" },
+    { id: "perplexity", name: "Perplexity", color: "text-platform-perplexity" },
   ] as const;
 
   return (
@@ -145,6 +146,7 @@ export function CompactStats() {
     { id: "claude", name: "Claude", color: "bg-platform-claude" },
     { id: "gemini", name: "Gemini", color: "bg-platform-gemini" },
     { id: "grok", name: "Grok", color: "bg-platform-grok" },
+    { id: "perplexity", name: "Perplexity", color: "bg-platform-perplexity" },
   ] as const;
 
   const activePlatforms = platforms.filter(p => stats.byProvider[p.id] > 0);

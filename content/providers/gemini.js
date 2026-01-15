@@ -13,6 +13,18 @@ window.AIChatIndexProviders.gemini = {
     return window.location.hostname === 'gemini.google.com';
   },
 
+  // Get the conversation title from the page
+  getTitle() {
+    // Try to get the title from the conversation title span
+    const titleEl = document.querySelector('.conversation-title') ||
+                    document.querySelector('[class*="conversation-title"]') ||
+                    document.querySelector('.gds-title-m');
+    if (titleEl && titleEl.textContent.trim()) {
+      return titleEl.textContent.trim();
+    }
+    return null;
+  },
+
   // Selector for the container that holds all messages
   getConversationContainer() {
     return document.querySelector('.conversation-container') ||

@@ -5,34 +5,39 @@ import { useState } from "react";
 
 const faqs = [
   {
-    question: "Is this extension safe to use?",
+    question: "How is this different from browser history?",
     answer:
-      "Yes. The extension only runs on AI chat websites, doesn't collect any data, makes no network requests, and all code is open source for you to review.",
+      "Browser history only saves URLs — you still have to manually scroll through each conversation to find what you need. UnifyChats indexes every message and lets you search by content across all platforms. Plus, your data syncs to the cloud so you can access it from any device.",
   },
   {
-    question: "Why isn't it in the Chrome Web Store?",
+    question: "What happens to my conversations if I use AI on another device?",
     answer:
-      "Publishing to the Chrome Web Store requires a developer account ($5 one-time fee) and review process. We're working on getting it listed. For now, you can load it manually using the steps above—it's just as safe.",
+      "As long as you have the extension installed and you're signed in, conversations sync automatically to your account. You can access all your indexed conversations from any device through the web dashboard.",
   },
   {
-    question: "The index isn't showing any messages",
+    question: "Which AI platforms are supported?",
     answer:
-      "AI chat websites occasionally update their code which can break the extension. Try refreshing the page first. If it still doesn't work, check for extension updates or report the issue on GitHub.",
+      "We currently support ChatGPT, Claude, Gemini, Grok, and Perplexity. We're actively adding more platforms based on user requests. The extension only activates on supported sites.",
   },
   {
-    question: "Can I use this on mobile?",
+    question: "Can I export my conversations?",
     answer:
-      "Currently, this extension only works on desktop browsers. Mobile browser extensions have limited support, but we may explore options in the future.",
+      "Yes! You can export conversations in JSON or Markdown format. We're also working on direct integrations with Notion, Obsidian, and other note-taking apps.",
   },
   {
-    question: "Will you add support for other AI chat sites?",
+    question: "Is my data private?",
     answer:
-      "Yes! We plan to add support for more platforms. If you have a specific site in mind, let us know by opening an issue on GitHub.",
+      "Absolutely. Your conversations are encrypted in transit and stored securely. We don't read, analyze, or train on your data. You can delete your data at any time from the dashboard.",
   },
   {
-    question: "Firefox says the extension is 'temporary'",
+    question: "Is it free?",
     answer:
-      "Firefox requires extensions to be signed for permanent installation. You can still use it, but you'll need to reload it after restarting Firefox. We're working on getting it signed.",
+      "The core features are free forever — sync, search, bookmarks, and projects. We're building premium features like smarter search and usage insights that will be available on paid plans.",
+  },
+  {
+    question: "Why do I need to load the extension manually?",
+    answer:
+      "We're in the process of getting the extension listed on the Chrome Web Store and Firefox Add-ons. For now, you can load it manually in developer mode — it takes about a minute and works exactly the same.",
   },
 ];
 
@@ -44,10 +49,10 @@ export function FAQ() {
       <div className="max-w-2xl mx-auto px-6">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Frequently asked questions
+            Questions & answers
           </h2>
           <p className="text-gray-400 text-lg">
-            Everything you need to know about AI Chat Index.
+            Everything you need to know about UnifyChats.
           </p>
         </div>
 

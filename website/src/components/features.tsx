@@ -1,30 +1,10 @@
-import { cn } from "@/lib/utils";
 import { Card } from "./ui/card";
 
 const features = [
   {
-    title: "Floating Index",
+    title: "Find anything instantly",
     description:
-      "A minimal button in the corner expands into a full message index. Always accessible, never in the way.",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        className="w-6 h-6"
-      >
-        <rect x="3" y="3" width="18" height="18" rx="2" />
-        <line x1="8" y1="8" x2="16" y2="8" />
-        <line x1="8" y1="12" x2="16" y2="12" />
-        <line x1="8" y1="16" x2="12" y2="16" />
-      </svg>
-    ),
-  },
-  {
-    title: "Instant Navigation",
-    description:
-      "Click any message preview to jump directly to it. Smooth scroll with visual highlight so you never lose your place.",
+      "Search all your AI conversations in one place. No more digging through browser history or separate apps.",
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -39,46 +19,9 @@ const features = [
     ),
   },
   {
-    title: "Filter by Role",
+    title: "Auto-sync across platforms",
     description:
-      "Quickly filter to show only your messages, only AI responses, or everything. Find what you need faster.",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        className="w-6 h-6"
-      >
-        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-      </svg>
-    ),
-  },
-  {
-    title: "Draggable Panel",
-    description:
-      "Position the index anywhere on your screen. It stays where you put it, adapting to your workflow.",
-    icon: (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        className="w-6 h-6"
-      >
-        <polyline points="5 9 2 12 5 15" />
-        <polyline points="9 5 12 2 15 5" />
-        <polyline points="15 19 12 22 9 19" />
-        <polyline points="19 9 22 12 19 15" />
-        <line x1="2" y1="12" x2="22" y2="12" />
-        <line x1="12" y1="2" x2="12" y2="22" />
-      </svg>
-    ),
-  },
-  {
-    title: "Live Updates",
-    description:
-      "The index automatically updates as new messages appear. No refresh needed, always in sync.",
+      "ChatGPT, Claude, Gemini, Grok, Perplexity — all synced automatically as you chat. Zero manual effort.",
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -94,9 +37,9 @@ const features = [
     ),
   },
   {
-    title: "Multi-Platform",
+    title: "Save important responses",
     description:
-      "Works seamlessly across ChatGPT, Claude, Gemini, and Grok. One extension for all your AI conversations.",
+      "Bookmark the messages you'll need again. Build your personal library of AI-generated insights.",
     icon: (
       <svg
         viewBox="0 0 24 24"
@@ -105,9 +48,56 @@ const features = [
         strokeWidth="1.5"
         className="w-6 h-6"
       >
-        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-        <line x1="8" y1="21" x2="16" y2="21" />
-        <line x1="12" y1="17" x2="12" y2="21" />
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+      </svg>
+    ),
+  },
+  {
+    title: "Organize by project",
+    description:
+      "Group related conversations together. Keep your work projects, research, and learning separate.",
+    icon: (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        className="w-6 h-6"
+      >
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+      </svg>
+    ),
+  },
+  {
+    title: "Access anywhere",
+    description:
+      "Your conversations sync to the cloud. Access your dashboard from any device, anytime.",
+    icon: (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        className="w-6 h-6"
+      >
+        <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+      </svg>
+    ),
+  },
+  {
+    title: "Private & secure",
+    description:
+      "Your data stays yours. We don't train on your conversations or share them with anyone.",
+    icon: (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        className="w-6 h-6"
+      >
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
       </svg>
     ),
   },
@@ -115,14 +105,14 @@ const features = [
 
 export function Features() {
   return (
-    <section id="features" className="py-24 md:py-32">
+    <section id="features" className="py-16 md:py-24">
       <div className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-16">
+        <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Simple, powerful features
+            Everything you need
           </h2>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Designed to enhance your AI conversations without getting in the way.
+            Stop losing valuable AI conversations. Start building your personal knowledge base.
           </p>
         </div>
 

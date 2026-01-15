@@ -27,8 +27,11 @@
   let currentProvider = null;
   let isExpanded = false;
   let isDragging = false;
+  let isDraggingButton = false;
   let dragOffset = { x: 0, y: 0 };
   let panelPosition = { x: null, y: null };
+  let buttonPosition = { x: null, y: null }; // Track button position for dragging
+  let dragStartPos = { x: 0, y: 0 }; // Track where drag started to detect click vs drag
   let isSyncing = false;
   let bookmarkedIndices = new Set(); // Track bookmarked message indices
   let isBookmarkingIndex = null; // Track which message is currently being bookmarked
@@ -70,12 +73,102 @@
       </svg>
       <span class="ai-chat-index-badge">0</span>
     `;
-    floatingButton.title = 'Chat Index';
+    floatingButton.title = 'Chat Index (drag to move)';
 
-    floatingButton.addEventListener('click', togglePanel);
+    // Use mousedown to detect both click and drag
+    floatingButton.addEventListener('mousedown', startButtonDrag);
 
     document.body.appendChild(floatingButton);
+
+    // Load saved button position
+    loadButtonPosition();
+
     return floatingButton;
+  }
+
+  // Load button position from storage
+  function loadButtonPosition() {
+    chrome.storage.sync.get(['buttonPosition'], (result) => {
+      if (result.buttonPosition) {
+        buttonPosition = result.buttonPosition;
+        applyButtonPosition();
+      }
+    });
+  }
+
+  // Save button position to storage
+  function saveButtonPosition() {
+    chrome.storage.sync.set({ buttonPosition });
+  }
+
+  // Apply button position to DOM
+  function applyButtonPosition() {
+    if (buttonPosition.x !== null && floatingButton) {
+      floatingButton.style.right = 'auto';
+      floatingButton.style.bottom = 'auto';
+      floatingButton.style.left = buttonPosition.x + 'px';
+      floatingButton.style.top = buttonPosition.y + 'px';
+    }
+  }
+
+  // Button drag functionality
+  function startButtonDrag(e) {
+    if (e.button !== 0) return; // Only left click
+
+    dragStartPos.x = e.clientX;
+    dragStartPos.y = e.clientY;
+
+    const rect = floatingButton.getBoundingClientRect();
+    dragOffset.x = e.clientX - rect.left;
+    dragOffset.y = e.clientY - rect.top;
+
+    document.addEventListener('mousemove', onButtonDrag);
+    document.addEventListener('mouseup', stopButtonDrag);
+
+    e.preventDefault();
+  }
+
+  function onButtonDrag(e) {
+    const moveX = Math.abs(e.clientX - dragStartPos.x);
+    const moveY = Math.abs(e.clientY - dragStartPos.y);
+
+    // Start dragging after 5px threshold to distinguish from click
+    if (!isDraggingButton && (moveX > 5 || moveY > 5)) {
+      isDraggingButton = true;
+      floatingButton.classList.add('dragging');
+    }
+
+    if (!isDraggingButton) return;
+
+    const x = e.clientX - dragOffset.x;
+    const y = e.clientY - dragOffset.y;
+
+    // Keep button within viewport
+    const maxX = window.innerWidth - floatingButton.offsetWidth;
+    const maxY = window.innerHeight - floatingButton.offsetHeight;
+
+    buttonPosition.x = Math.max(0, Math.min(x, maxX));
+    buttonPosition.y = Math.max(0, Math.min(y, maxY));
+
+    floatingButton.style.right = 'auto';
+    floatingButton.style.bottom = 'auto';
+    floatingButton.style.left = buttonPosition.x + 'px';
+    floatingButton.style.top = buttonPosition.y + 'px';
+  }
+
+  function stopButtonDrag(e) {
+    document.removeEventListener('mousemove', onButtonDrag);
+    document.removeEventListener('mouseup', stopButtonDrag);
+
+    if (isDraggingButton) {
+      // Was dragging - save position
+      floatingButton.classList.remove('dragging');
+      saveButtonPosition();
+      isDraggingButton = false;
+    } else {
+      // Was a click - toggle panel
+      togglePanel();
+    }
   }
 
   // Create the index panel
@@ -96,19 +189,19 @@
         </select>
         <div class="ai-chat-index-quick-links">
           <a href="https://chatgpt.com" target="_blank" class="ai-chat-index-quick-link" title="ChatGPT">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.896zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08L8.704 5.46a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z"/></svg>
+            <img src="${chrome.runtime.getURL('logos/chat-gpt-white.svg')}" width="14" height="14" alt="ChatGPT">
           </a>
           <a href="https://claude.ai" target="_blank" class="ai-chat-index-quick-link" title="Claude">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M4.709 15.955l4.72-2.647.08-.08-.08-.1-2.786-2.38a.424.424 0 0 1-.149-.313.39.39 0 0 1 .129-.303c.079-.069.189-.119.299-.129a.47.47 0 0 1 .318.1l3.662 3.085a.465.465 0 0 1 .159.338l-.03.05-5.307 3.055c-.199.12-.428.05-.538-.139-.09-.169-.06-.398.12-.517l-.597-.02zM19.291 15.955l-4.72-2.647-.08-.08.08-.1 2.786-2.38a.424.424 0 0 0 .149-.313.39.39 0 0 0-.129-.303.456.456 0 0 0-.299-.129.47.47 0 0 0-.318.1l-3.662 3.085a.465.465 0 0 0-.159.338l.03.05 5.307 3.055c.199.12.428.05.538-.139.09-.169.06-.398-.12-.517l.597-.02zM12 4c.552 0 1 .448 1 1v4c0 .552-.448 1-1 1s-1-.448-1-1V5c0-.552.448-1 1-1zm0 10c.552 0 1 .448 1 1v4c0 .552-.448 1-1 1s-1-.448-1-1v-4c0-.552.448-1 1-1z"/></svg>
+            <img src="${chrome.runtime.getURL('logos/claude-logo.svg')}" width="14" height="14" alt="Claude">
           </a>
           <a href="https://gemini.google.com" target="_blank" class="ai-chat-index-quick-link" title="Gemini">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 24A14.304 14.304 0 0 0 12 0a14.304 14.304 0 0 0 0 24zM6.5 12c0-1.5.5-2.9 1.3-4a5.5 5.5 0 0 1 8.4 0c.8 1.1 1.3 2.5 1.3 4s-.5 2.9-1.3 4a5.5 5.5 0 0 1-8.4 0c-.8-1.1-1.3-2.5-1.3-4z"/></svg>
+            <img src="${chrome.runtime.getURL('logos/gemini-logo.svg')}" width="14" height="14" alt="Gemini">
           </a>
-          <a href="https://grok.x.ai" target="_blank" class="ai-chat-index-quick-link" title="Grok">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          <a href="https://grok.com" target="_blank" class="ai-chat-index-quick-link" title="Grok">
+            <img src="${chrome.runtime.getURL('logos/grok-logo.svg')}" width="14" height="14" alt="Grok">
           </a>
           <a href="https://perplexity.ai" target="_blank" class="ai-chat-index-quick-link" title="Perplexity">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <img src="${chrome.runtime.getURL('logos/perplexity-logo.svg')}" width="14" height="14" alt="Perplexity">
           </a>
         </div>
       </div>
@@ -180,11 +273,36 @@
   // Position the panel near the button
   function positionPanel() {
     if (panelPosition.x !== null) {
+      // Panel has been manually positioned
       panel.style.left = panelPosition.x + 'px';
       panel.style.top = panelPosition.y + 'px';
       panel.style.right = 'auto';
       panel.style.bottom = 'auto';
+    } else if (buttonPosition.x !== null) {
+      // Position panel relative to button's custom position
+      const btnRect = floatingButton.getBoundingClientRect();
+      const panelWidth = 320;
+      const panelHeight = 500;
+
+      // Try to position panel above and to the left of button
+      let x = btnRect.left - panelWidth + btnRect.width;
+      let y = btnRect.top - panelHeight - 8;
+
+      // If panel would go off screen, adjust position
+      if (x < 8) x = 8;
+      if (y < 8) {
+        y = btnRect.bottom + 8; // Put below button instead
+      }
+      if (x + panelWidth > window.innerWidth - 8) {
+        x = window.innerWidth - panelWidth - 8;
+      }
+
+      panel.style.left = x + 'px';
+      panel.style.top = y + 'px';
+      panel.style.right = 'auto';
+      panel.style.bottom = 'auto';
     }
+    // Otherwise use default CSS positioning (bottom: 80px, right: 24px)
   }
 
   // Drag functionality
@@ -950,17 +1068,23 @@
       externalId = match ? match[2] : url;
     }
 
-    // Try to get title from page
-    let title = document.title;
-    // Clean up common suffixes
-    title = title
-      .replace(/ - ChatGPT$/, '')
-      .replace(/ - Claude$/, '')
-      .replace(/ - Gemini$/, '')
-      .replace(/ \| Grok$/, '')
-      .replace(/ - Perplexity$/, '')
-      .replace(/ \| Perplexity$/, '')
-      .trim();
+    // Try to get title from provider-specific method first, then fall back to document.title
+    let title = null;
+    if (currentProvider.getTitle) {
+      title = currentProvider.getTitle();
+    }
+    if (!title) {
+      title = document.title;
+      // Clean up common suffixes
+      title = title
+        .replace(/ - ChatGPT$/, '')
+        .replace(/ - Claude$/, '')
+        .replace(/ - Gemini$/, '')
+        .replace(/ \| Grok$/, '')
+        .replace(/ - Perplexity$/, '')
+        .replace(/ \| Perplexity$/, '')
+        .trim();
+    }
 
     return {
       provider: currentProvider.id,
